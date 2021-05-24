@@ -69,8 +69,8 @@ public class Drivetrain extends SubsystemBase {
         // Utility.TalonSRXInit(rFalconMaster);
         // Utility.TalonSRXInit(lFalconMaster);
 
-        rFalconSlave.follow(rFalconMaster);
-        lFalconSlave.follow(lFalconMaster);
+        // rFalconSlave.follow(rFalconMaster);
+        // lFalconSlave.follow(lFalconMaster);
 
         lFalconMaster.setInverted(true);
         lFalconSlave.setInverted(true);
@@ -79,9 +79,8 @@ public class Drivetrain extends SubsystemBase {
 
         Utility.configTalonFXPID(lFalconMaster, 0.1097, 0.22, 0, 0, 0);
         Utility.configTalonFXPID(rFalconMaster, 0.1097, 0.22, 0, 0, 0);
-
-        // Utility.configTalonSRXPID(lFalconMaster, 0.1097, 0.22, 0.0, 0.0, 0, 0.0);
-        // Utility.configTalonSRXPID(rFalconMaster, 0.1097, 0.22, 0.0, 0.0, 0, 0.0);
+        Utility.configTalonFXPID(lFalconSlave, 0.1097, 0.22, 0.0, 0.0, 0);
+        Utility.configTalonFXPID(rFalconSlave, 0.1097, 0.22, 0.0, 0.0, 0);
 
         ahrs.reset();
 
@@ -133,15 +132,16 @@ public class Drivetrain extends SubsystemBase {
 
         double rotationGain = Math.copySign(rotation * Constants.rotationCoeff, forward);
 
-        // rotation >= 0 ? lSpeed -= rotationGain : lSpeed += rotationGain;
-        lSpeed += (rotation >= 0 ? -rotationGain : rotationGain);
-        rSpeed += (rotation >= 0 ? rotationGain : -rotationGain);
+        lSpeed += (rotation >= 0 ? rotationGain : -rotationGain);
+        rSpeed += (rotation >= 0 ? -rotationGain : rotationGain);
 
         lSpeed *= Constants.falconVelocityConstant * Constants.drivetrainTargetRPM;
         rSpeed *= Constants.falconVelocityConstant * Constants.drivetrainTargetRPM;
 
         lFalconMaster.set(TalonFXControlMode.Velocity, lSpeed);
+        lFalconSlave.set(TalonFXControlMode.Velocity, lSpeed);
         rFalconMaster.set(TalonFXControlMode.Velocity, rSpeed);
+        rFalconSlave.set(TalonFXControlMode.Velocity, rSpeed);
 
         SmartDashboard.putBoolean("High speed mode?", gearboxState);
 

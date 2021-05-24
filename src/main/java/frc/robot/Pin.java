@@ -76,8 +76,8 @@ public final class Pin {
 
         public static final class Motor {
 
-            public static final int lTelescopeFalcon = 5;
-            public static final int rTelescopeFalcon = 6;
+            public static final int lTelescopeTalon = 5;
+            public static final int rTelescopeTalon = 6;
 
         }
 
@@ -142,6 +142,8 @@ public final class Pin {
             public static final int releaseClimber = XboxController.Button.kA.value;
             public static final int stretchClimber = XboxController.Button.kStart.value;
             public static final int telescopeClimber = XboxController.Button.kBack.value;
+            public static final int rotateShooterLeftward = XboxController.Button.kBumperLeft.value;
+            public static final int rotateShooterRightward = XboxController.Button.kBumperRight.value;
 
         }
 

@@ -22,9 +22,12 @@ public final class Constants {
 	public static final int kPIDLoopIdx = 0;
 	public static final int kTimeoutMs = 10;
 
-	//velocity constant
-	public static final double falconVelocityConstant = 2048.0/600.0;
-	public static final double velocityConstants = 4096.0/600.0;
+	// Velocity constants
+
+	// Multiply this constant with the target RPM to get the velocity input of TalonFX in units/100ms.
+	public static final double falconVelocityConstant = 2048 / 600.0;
+	// Multiply this constant with the target RPM to get the velocity input of TalonSRX in units/100ms.
+	public static final double talonVelocityConstant = 4096 / 600.0;
 
 	//rotation
 	public static final double kTurnToleranceDeg = 1;
@@ -49,6 +52,7 @@ public final class Constants {
 	public static final class Shooter {
 		
 		public static final int flywheelTargetSpeed = 4000;
+		public static final int rotateTargetSpeed = 400;
 
 	}
 
@@ -83,8 +87,8 @@ public final class Constants {
     
     public static final class Climber {
 
-		public static final double stretchOutput = 0.3;
-		public static final double telescopeOutput = 0.5;
+		public static final double stretchTargetSpeed = 1000;
+		public static final double telescopeTargetSpeed = 1000;
 
 	}
 

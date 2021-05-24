@@ -89,6 +89,9 @@ public class RobotContainer {
         drivetrain.setDefaultCommand(
             new RunCommand(() -> drivetrain.velocityDrive(axisZeroCorrect(controller.getRawAxis(Pin.Controller.Axis.forward)),
                     axisZeroCorrect(controller.getRawAxis(Pin.Controller.Axis.rotation))), drivetrain));
+            
+        // shooter.setDefaultCommand(new RunCommand(() -> shooter.stop(), shooter));
+        // drum.setDefaultCommand(new RunCommand(() -> drum.stop(), drum));
         // intake.setDefaultCommand(new RunCommand(() -> intake.launch(controller.getTriggerAxis(Hand.kLeft)), intake));
         // drum.setDefaultCommand(new RunCommand(() -> drum.rotate(Constants.Drum.intakeOutput, controller.getTriggerAxis(Hand.kLeft), controller.getTriggerAxis(Hand.kRight)), drum));
         // shooter.setDefaultCommand(new RunCommand(() -> shooter.shoot(controller.getTriggerAxis(Hand.kRight)), shooter));
@@ -127,6 +130,14 @@ public class RobotContainer {
 
         // Shoot balls
         new TriggerPressed(controller, Hand.kRight).whenActive(shootBall);
+
+        // Rotate shooter leftward
+        new JoystickButton(controller, Pin.Controller.Button.rotateShooterLeftward)
+            .whenHeld(new InstantCommand(() -> shooter.rotate(Constants.Shooter.rotateTargetSpeed), shooter));
+
+        // Rotate shooter rightward
+        new JoystickButton(controller, Pin.Controller.Button.rotateShooterLeftward)
+        .whenHeld(new InstantCommand(() -> shooter.rotate(-Constants.Shooter.rotateTargetSpeed), shooter));
 
         // Release climber
         new JoystickButton(controller, Pin.Controller.Button.releaseClimber)
@@ -189,7 +200,7 @@ public class RobotContainer {
 
     private double axisZeroCorrect(double axis) {
         if (axis <= Constants.Controller.axisZeroCorrectionRange && axis >= -Constants.Controller.axisZeroCorrectionRange) {
-                return 0;
+                return -0.01;
         }
         return axis;
     }

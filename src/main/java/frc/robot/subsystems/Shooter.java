@@ -43,12 +43,13 @@ public class Shooter extends SubsystemBase {
 
         Utility.configTalonFXPID(lFlywheelFalcon, 0.1097, 0.22, 0, 0, 0);
         Utility.configTalonFXPID(rFlywheelFalcon, 0.1097, 0.22, 0, 0, 0);
+        Utility.configTalonSRXPID(rotateTalon, 0.1097, 0.22, 0, 0, 0, 0);
 
-        // lFlywheelFalcon.configVoltageCompSaturation(12); // "full output" will now scale to 11 Volts for all control
-        //                                                      // modes when enabled.
-        // rFlywheelFalcon.configVoltageCompSaturation(12);
-        // lFlywheelFalcon.enableVoltageCompensation(true);
-        // rFlywheelFalcon.enableVoltageCompensation(true);
+        lFlywheelFalcon.configVoltageCompSaturation(12); // "full output" will now scale to 11 Volts for all control
+                                                             // modes when enabled.
+        rFlywheelFalcon.configVoltageCompSaturation(12);
+        lFlywheelFalcon.enableVoltageCompensation(true);
+        rFlywheelFalcon.enableVoltageCompensation(true);
 
     }
 
@@ -63,36 +64,28 @@ public class Shooter extends SubsystemBase {
     // This method will be called once per scheduler run
     @Override
     public void periodic() {
-        lFlywheelFalcon.set(TalonFXControlMode.Velocity, 0.8*Constants.Shooter.flywheelTargetSpeed * Constants.falconVelocityConstant);
-        rFlywheelFalcon.set(TalonFXControlMode.Velocity, -0.8*Constants.Shooter.flywheelTargetSpeed * Constants.falconVelocityConstant);
-        
         SmartDashboard.putNumber("Shooter elevation", getElevation());
     }
-
-    // // Accelerate the flywheel to the speed ready to shoot balls
-    // public void shoot() {
-    //     lFlywheelFalcon.set(ControlMode.Velocity, Constants.flywheelTargetSpeed);
-    // }
 
     /**
      * Load balls into the shooter and shoot.
      */
     public void shoot() {
-        // if (axis >= 0.75) {
-            lFlywheelFalcon.set(TalonFXControlMode.Velocity, Constants.Shooter.flywheelTargetSpeed * Constants.falconVelocityConstant);
-            rFlywheelFalcon.set(TalonFXControlMode.Velocity, -Constants.Shooter.flywheelTargetSpeed * Constants.falconVelocityConstant);
-            loadBallTalon.set(ControlMode.PercentOutput, Constants.loadBallTalonOutput);
-        // }
-        // else {
-        //     stop();
-        // }
+        lFlywheelFalcon.set(TalonFXControlMode.Velocity, Constants.Shooter.flywheelTargetSpeed * Constants.falconVelocityConstant);
+        rFlywheelFalcon.set(TalonFXControlMode.Velocity, -Constants.Shooter.flywheelTargetSpeed * Constants.falconVelocityConstant);
+        // if (lFlywheelFalcon.getActiveTrajectoryVelocity())
+        loadBallTalon.set(ControlMode.PercentOutput, Constants.loadBallTalonOutput);
     }
 
     /**
-     * Stop the ball loader.
+     * Stop all triggering motors and return to default state.
      */
     public void stop() {
         loadBallTalon.set(ControlMode.PercentOutput, 0);
+        rotateTalon.set(ControlMode.Velocity, 0);
+        elevateTalon.set(ControlMode.Velocity, 0);
+        // lFlywheelFalcon.set(TalonFXControlMode.Velocity, 0.8*Constants.Shooter.flywheelTargetSpeed * Constants.falconVelocityConstant);
+        // rFlywheelFalcon.set(TalonFXControlMode.Velocity, -0.8*Constants.Shooter.flywheelTargetSpeed * Constants.falconVelocityConstant);
     }
 
     /**

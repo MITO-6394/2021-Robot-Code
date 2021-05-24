@@ -24,20 +24,15 @@ public class Drum extends SubsystemBase {
     @Override
     public void periodic() {
         // This method will be called once per scheduler run
+        rotateTalon.set(ControlMode.PercentOutput, 0);
     }
 
     /**
      * Rotate the drum.
      * @param out The percentage output of the motor.
      */
-    // public void rotate(Double out, double lAxis, double rAxis) {
     public void rotate(Double out) {
-        // if (lAxis >= 0.75 || rAxis >= 0.75){
-            rotateTalon.set(ControlMode.PercentOutput, out);
-        // } else {
-        //     stop();
-        // }
-        
+        rotateTalon.set(ControlMode.PercentOutput, out);
     }
 
     public void stop() {

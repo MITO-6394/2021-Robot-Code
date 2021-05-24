@@ -2,6 +2,7 @@ package frc.robot;
 
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.GenericHID.Hand;
+import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 
 /**
@@ -9,15 +10,17 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
  */
 public class TriggerPressed extends Trigger {
 
-    private double axis;
+    private XboxController controller;
+    private Hand hand;
 
     public TriggerPressed(XboxController controller, Hand hand) {
-        this.axis = controller.getTriggerAxis(hand);
+        this.controller = controller;
+        this.hand = hand;
     }
-
 
     @Override
     public boolean get() {
+        double axis = controller.getTriggerAxis(hand);
         if (Math.abs(axis) >= Constants.Controller.triggerPressedThreshold) {
             return true;
         }

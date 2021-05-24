@@ -27,17 +27,18 @@ public class Intake extends SubsystemBase {
     // Whether the intake system is deployed
     private boolean deployState = false;
 
-    private int state = 1;
 
     public Intake() {
         Utility.TalonFXInit(intakeFalcon);
         intakeFalcon.setInverted(false);
+        deploySolenoid.set(Value.kReverse);
         // deploySolenoid.set(Value.kOff);
     }
 
     @Override
     public void periodic() {
         // This method will be called once per scheduler run
+        intakeFalcon.set(ControlMode.PercentOutput, 0);
     }
 
     /**
@@ -46,6 +47,7 @@ public class Intake extends SubsystemBase {
     public void deploy() {
         deployState = !deployState;
         deploySolenoid.set(deployState ? Value.kForward : Value.kReverse);
+        deploySolenoid.set(Value.kOff);
         // deploySolenoid.toggle();
         // SmartDashboard.putBoolean("Intake deployed?", deployState);
     }
@@ -54,12 +56,7 @@ public class Intake extends SubsystemBase {
      * Start to intake balls.
      */
     public void launch() {
-        // if (axis>0.75){
-            intakeFalcon.set(ControlMode.PercentOutput, -Constants.intakeMotorOutput);
-        // } else {
-        //     stop();
-        // }
-        
+        intakeFalcon.set(ControlMode.PercentOutput, -Constants.intakeMotorOutput);
     }
 
     /**

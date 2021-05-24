@@ -8,18 +8,20 @@
 package frc.robot.subsystems;
 
 import com.ctre.phoenix.motorcontrol.ControlMode;
+import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
 
 import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.Pin;
+import frc.robot.Utility;
 
 public class Climber extends SubsystemBase {
 
     private Solenoid holder = new Solenoid(Pin.Climber.Solenoid.holder);
-    private WPI_TalonFX lTelescopeFalcon = new WPI_TalonFX(Pin.Climber.Motor.lTelescopeFalcon);
-    private WPI_TalonFX rTelescopeFalcon = new WPI_TalonFX(Pin.Climber.Motor.rTelescopeFalcon);
+    private TalonSRX lTelescopeTalon = new TalonSRX(Pin.Climber.Motor.lTelescopeTalon);
+    private TalonSRX rTelescopeTalon = new TalonSRX(Pin.Climber.Motor.rTelescopeTalon);
 
     // Climber is allowed to be released if insurance is false.
     private boolean insurance = true;
@@ -27,7 +29,8 @@ public class Climber extends SubsystemBase {
     private boolean solenoidState = false;
 
     public Climber() {
-        holder.set(false);
+        holder.set(true);
+        Utility.configTalonSRXPID(lTelescopeTalon, 0.1097, 0.22, 0.0, 0, 0, 0);
     }
 
     @Override
@@ -39,7 +42,7 @@ public class Climber extends SubsystemBase {
      * Release the climber.
      */
     public void release() {
-        if (insurance) {
+        if (!insurance) {
             solenoidState = !solenoidState;
             holder.set(solenoidState);
         }
@@ -49,18 +52,22 @@ public class Climber extends SubsystemBase {
     }
 
     public void stretch() {
-        lTelescopeFalcon.set(ControlMode.PercentOutput, -Constants.Climber.stretchOutput);
-        rTelescopeFalcon.set(ControlMode.PercentOutput, Constants.Climber.stretchOutput);
+        // lTelescopeTalon.set(ControlMode.PercentOutput, -Constants.Climber.stretchOutput);
+        // rTelescopeTalon.set(ControlMode.PercentOutput, Constants.Climber.stretchOutput);
+        lTelescopeTalon.set(ControlMode.Velocity, -Constants.Climber.stretchTargetSpeed * Constants.talonVelocityConstant);
+        rTelescopeTalon.set(ControlMode.Velocity, Constants.Climber.stretchTargetSpeed * Constants.talonVelocityConstant);
     }
 
     public void telescope() {
-        lTelescopeFalcon.set(ControlMode.PercentOutput, Constants.Climber.telescopeOutput);
-        rTelescopeFalcon.set(ControlMode.PercentOutput, -Constants.Climber.telescopeOutput);
+        // lTelescopeTalon.set(ControlMode.PercentOutput, Constants.Climber.telescopeOutput);
+        // rTelescopeTalon.set(ControlMode.PercentOutput, -Constants.Climber.telescopeOutput);
+        lTelescopeTalon.set(ControlMode.Velocity, Constants.Climber.telescopeTargetSpeed * Constants.talonVelocityConstant);
+        rTelescopeTalon.set(ControlMode.Velocity, -Constants.Climber.telescopeTargetSpeed * Constants.talonVelocityConstant);
     }
 
     public void stop() {
-        lTelescopeFalcon.set(ControlMode.PercentOutput, 0);
-        rTelescopeFalcon.set(ControlMode.PercentOutput, 0);
+        lTelescopeTalon.set(ControlMode.PercentOutput, 0);
+        rTelescopeTalon.set(ControlMode.PercentOutput, 0);
     }
 
 }
