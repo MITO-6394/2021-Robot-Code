@@ -10,7 +10,6 @@ package frc.robot.commands;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.Constants;
-import frc.robot.subsystems.Drivetrain;
 import frc.robot.subsystems.Limelight;
 // import frc.robot.subsystems.Shooter;
 import frc.robot.subsystems.Shooter;
@@ -28,7 +27,6 @@ public class Aim extends CommandBase {
         this.shooter = shooter;
         addRequirements(this.limelight);
         addRequirements(this.shooter);
-        // addRequirements(mShooter);
     }
 
     // Called when the command is initially scheduled.
@@ -50,22 +48,32 @@ public class Aim extends CommandBase {
             SmartDashboard.putNumber("ty", ty);
 
             if (limelight.getTx() > 1.0) {
-                steeringAdjustment = Constants.kpAim * headError - Constants.minAimCommend;
+                steeringAdjustment = Constants.kpAim * headError - Constants.minAimCommand;
             } else if (limelight.getTx() < 1.0) {
-                steeringAdjustment = Constants.kpAim * headError + Constants.minAimCommend;
+                steeringAdjustment = Constants.kpAim * headError + Constants.minAimCommand;
             }
 
             System.out.println("steeringAdjustment:" + steeringAdjustment);
 
+            shooter.rotate(steeringAdjustment);
+
             // mShooter.shooterRotation(steeringAdjustment);
             // drivetrain.velocityDrive(0.0, -steeringAdjustment * Constants.aimRate);
         }
+        else {
+            SmartDashboard.putBoolean("Aimed?", false);
+        }
+    }
+
+    @Override
+    public void end(boolean interrupted) {
+
     }
 
     // Returns true when the command should end.
     @Override
     public boolean isFinished() {
-        return Math.abs(limelight.getTx()) < Constants.kTxTorrance;
+        return Math.abs(limelight.getTx()) < Constants.kTxTolerance;
     }
 
 }

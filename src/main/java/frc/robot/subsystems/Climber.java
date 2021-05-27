@@ -8,6 +8,7 @@
 package frc.robot.subsystems;
 
 import com.ctre.phoenix.motorcontrol.ControlMode;
+import com.ctre.phoenix.motorcontrol.TalonSRXControlMode;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
 
@@ -30,7 +31,16 @@ public class Climber extends SubsystemBase {
 
     public Climber() {
         holder.set(true);
-        Utility.configTalonSRXPID(lTelescopeTalon, 0.1097, 0.22, 0.0, 0, 0, 0);
+        // Utility.configTalonSRXPID(lTelescopeTalon, 0.1097, 0.22, 0.0, 0, 0, 0);
+        // Utility.configTalonSRXPID(rTelescopeTalon, 0.1097, 0.22, 0.0, 0, 0, 0);
+        Utility.configTalonSRXPID(lTelescopeTalon, 0.0, 0.4, 0.0002, 40, 150, 0.5);
+        Utility.configTalonSRXPID(rTelescopeTalon, 0.0, 0.4, 0.0002, 40, 150, 0.5);
+
+        lTelescopeTalon.configPeakOutputForward(1.0);
+        lTelescopeTalon.configPeakOutputReverse(-1.0);
+        rTelescopeTalon.configPeakOutputForward(1.0);
+        rTelescopeTalon.configPeakOutputReverse(-1.0);
+
     }
 
     @Override
@@ -54,15 +64,19 @@ public class Climber extends SubsystemBase {
     public void stretch() {
         // lTelescopeTalon.set(ControlMode.PercentOutput, -Constants.Climber.stretchOutput);
         // rTelescopeTalon.set(ControlMode.PercentOutput, Constants.Climber.stretchOutput);
-        lTelescopeTalon.set(ControlMode.Velocity, -Constants.Climber.stretchTargetSpeed * Constants.talonVelocityConstant);
-        rTelescopeTalon.set(ControlMode.Velocity, Constants.Climber.stretchTargetSpeed * Constants.talonVelocityConstant);
+        // lTelescopeTalon.set(TalonSRXControlMode.Position, -Constants.Climber.stretchTargetPos * Constants.talonPositionConstant);
+        lTelescopeTalon.set(TalonSRXControlMode.Position, 30*-4096);
+        rTelescopeTalon.set(TalonSRXControlMode.Position, 30*4096);
+        // rTelescopeTalon.set(TalonSRXControlMode.Position, Constants.Climber.stretchTargetPos * Constants.talonPositionConstant);
     }
 
     public void telescope() {
         // lTelescopeTalon.set(ControlMode.PercentOutput, Constants.Climber.telescopeOutput);
         // rTelescopeTalon.set(ControlMode.PercentOutput, -Constants.Climber.telescopeOutput);
-        lTelescopeTalon.set(ControlMode.Velocity, Constants.Climber.telescopeTargetSpeed * Constants.talonVelocityConstant);
-        rTelescopeTalon.set(ControlMode.Velocity, -Constants.Climber.telescopeTargetSpeed * Constants.talonVelocityConstant);
+        // lTelescopeTalon.set(TalonSRXControlMode.Position, Constants.Climber.telescopeTargetPos * Constants.talonPositionConstant);
+        lTelescopeTalon.set(TalonSRXControlMode.Position, 0);
+        rTelescopeTalon.set(TalonSRXControlMode.Position, 0);
+        // rTelescopeTalon.set(TalonSRXControlMode.Position, -Constants.Climber.telescopeTargetPos * Constants.talonPositionConstant);
     }
 
     public void stop() {

@@ -16,6 +16,7 @@ import edu.wpi.first.wpilibj.GenericHID.Hand;
 import edu.wpi.first.wpilibj.simulation.JoystickSim;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.PerpetualCommand;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
@@ -67,7 +68,7 @@ public class RobotContainer {
     private final Limelight limelight = new Limelight();
     private final ExampleSubsystem example = new ExampleSubsystem();
 
-    private final Aim dummyAutoAim = new Aim(limelight, shooter);
+    private final Aim aim = new Aim(limelight, shooter);
 //     private final IntakeBall intakeBall = new IntakeBall(intake, drum, controller.getTriggerAxis(Hand.kLeft));
     private final IntakeBall intakeBall = new IntakeBall(intake, drum);
     private final ShootBall shootBall = new ShootBall(shooter, drum);
@@ -90,7 +91,8 @@ public class RobotContainer {
             new RunCommand(() -> drivetrain.velocityDrive(axisZeroCorrect(controller.getRawAxis(Pin.Controller.Axis.forward)),
                     axisZeroCorrect(controller.getRawAxis(Pin.Controller.Axis.rotation))), drivetrain));
             
-        // shooter.setDefaultCommand(new RunCommand(() -> shooter.stop(), shooter));
+        // limelight.setDefaultCommand(defaultCommand);
+        shooter.setDefaultCommand(new RunCommand(shooter::stop, shooter));
         // drum.setDefaultCommand(new RunCommand(() -> drum.stop(), drum));
         // intake.setDefaultCommand(new RunCommand(() -> intake.launch(controller.getTriggerAxis(Hand.kLeft)), intake));
         // drum.setDefaultCommand(new RunCommand(() -> drum.rotate(Constants.Drum.intakeOutput, controller.getTriggerAxis(Hand.kLeft), controller.getTriggerAxis(Hand.kRight)), drum));
@@ -115,7 +117,7 @@ public class RobotContainer {
      */
     private void configureButtonBindings() {
         
-        new JoystickButton(controller, Pin.Controller.Button.autoAim).whileActiveContinuous(dummyAutoAim);
+        // new JoystickButton(controller, Pin.Controller.Button.autoAim).whileActiveContinuous(dummyAutoAim);
 
         // Shift gearbox
         new JoystickButton(controller, Pin.Controller.Button.shiftGearbox)
@@ -125,31 +127,38 @@ public class RobotContainer {
         new JoystickButton(controller, Pin.Controller.Button.deployIntake)
             .whenActive(new InstantCommand(intake::deploy, intake));
 
+        // Hold intake system
+        new JoystickButton(controller, Pin.Controller.Button.holdIntake)
+            .whenActive(new InstantCommand(intake::hold, intake));
+
         // Intake balls
-        new TriggerPressed(controller, Hand.kLeft).whenActive(intakeBall);
+        new TriggerPressed(controller, Hand.kLeft).whileActiveOnce(intakeBall);
 
         // Shoot balls
-        new TriggerPressed(controller, Hand.kRight).whenActive(shootBall);
+        new TriggerPressed(controller, Hand.kRight).whileActiveOnce(shootBall);
 
         // Rotate shooter leftward
         new JoystickButton(controller, Pin.Controller.Button.rotateShooterLeftward)
-            .whenHeld(new InstantCommand(() -> shooter.rotate(Constants.Shooter.rotateTargetSpeed), shooter));
+            .whileHeld(new InstantCommand(() -> shooter.rotate(-Constants.Shooter.rotateTargetSpeed), shooter));
 
         // Rotate shooter rightward
-        new JoystickButton(controller, Pin.Controller.Button.rotateShooterLeftward)
-        .whenHeld(new InstantCommand(() -> shooter.rotate(-Constants.Shooter.rotateTargetSpeed), shooter));
+        new JoystickButton(controller, Pin.Controller.Button.rotateShooterRightward)
+            .whileHeld(new InstantCommand(() -> shooter.rotate(Constants.Shooter.rotateTargetSpeed), shooter));
 
         // Release climber
         new JoystickButton(controller, Pin.Controller.Button.releaseClimber)
-            .whenHeld(new InstantCommand(climber::release, climber));
+            .whenActive(new InstantCommand(climber::release, climber));
 
         // Stretch climber
         new JoystickButton(controller, Pin.Controller.Button.stretchClimber)
-            .whenHeld(stretchClimber);
+            .whenActive(stretchClimber);
 
         // Telescope climber
         new JoystickButton(controller, Pin.Controller.Button.telescopeClimber)
-            .whenHeld(telescopeClimber);
+            .whenActive(telescopeClimber);
+
+        // Aim
+        new PerpetualCommand(aim);
 
 
         // // Test solenoid

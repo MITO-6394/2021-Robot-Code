@@ -8,6 +8,8 @@
 package frc.robot.subsystems;
 
 import com.ctre.phoenix.motorcontrol.ControlMode;
+import com.ctre.phoenix.motorcontrol.NeutralMode;
+import com.ctre.phoenix.motorcontrol.StatorCurrentLimitConfiguration;
 import com.ctre.phoenix.motorcontrol.TalonFXControlMode;
 import com.ctre.phoenix.motorcontrol.can.TalonFX;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
@@ -61,10 +63,24 @@ public class Drivetrain extends SubsystemBase {
     // rFalconMaster);
 
     public Drivetrain() {
-        Utility.TalonFXInit(rFalconMaster);
         Utility.TalonFXInit(lFalconMaster);
-        Utility.TalonFXInit(rFalconSlave);
         Utility.TalonFXInit(lFalconSlave);
+        Utility.TalonFXInit(rFalconMaster);
+        Utility.TalonFXInit(rFalconSlave);
+
+        lFalconMaster.configPeakOutputForward(0.2);
+        lFalconMaster.configPeakOutputReverse(-0.2);
+        lFalconSlave.configPeakOutputForward(0.2);
+        lFalconSlave.configPeakOutputReverse(-0.2);
+        rFalconMaster.configPeakOutputForward(0.2);
+        rFalconMaster.configPeakOutputReverse(-0.2);
+        rFalconSlave.configPeakOutputForward(0.2);
+        rFalconSlave.configPeakOutputReverse(-0.2);
+
+        lFalconMaster.setNeutralMode(NeutralMode.Coast);
+        lFalconSlave.setNeutralMode(NeutralMode.Coast);
+        rFalconMaster.setNeutralMode(NeutralMode.Coast);
+        rFalconSlave.setNeutralMode(NeutralMode.Coast);
 
         // Utility.TalonSRXInit(rFalconMaster);
         // Utility.TalonSRXInit(lFalconMaster);
@@ -145,6 +161,7 @@ public class Drivetrain extends SubsystemBase {
 
         SmartDashboard.putBoolean("High speed mode?", gearboxState);
 
+
     }
 
     /**
@@ -152,7 +169,7 @@ public class Drivetrain extends SubsystemBase {
      */
     public void shiftGearbox() {
         gearboxState = !gearboxState;
-        shiftGearboxSolenoid.set(gearboxState ? Value.kForward : Value.kReverse);
+        shiftGearboxSolenoid.set(gearboxState ? Value.kReverse : Value.kForward);
     }
 
     public Boolean getGearboxState() {

@@ -30,12 +30,13 @@ public class StretchClimber extends CommandBase {
     @Override
     public void execute() {
         climber.stretch();
+        System.out.println("StretchClimber executing");
     }
 
     // Called once the command ends or is interrupted.
     @Override
     public void end(boolean interrupted) {
-        climber.stop();
+        // climber.stop();
     }
 
     // Returns true when the command should end.

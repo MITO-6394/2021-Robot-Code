@@ -2,6 +2,10 @@
 package frc.robot.subsystems;
 
 import com.ctre.phoenix.motorcontrol.ControlMode;
+import com.ctre.phoenix.motorcontrol.LimitSwitchNormal;
+import com.ctre.phoenix.motorcontrol.LimitSwitchSource;
+import com.ctre.phoenix.motorcontrol.NeutralMode;
+import com.ctre.phoenix.motorcontrol.RemoteLimitSwitchSource;
 import com.ctre.phoenix.motorcontrol.TalonFXControlMode;
 import com.ctre.phoenix.motorcontrol.TalonFXFeedbackDevice;
 import com.ctre.phoenix.motorcontrol.TalonFXSensorCollection;
@@ -36,6 +40,7 @@ public class Shooter extends SubsystemBase {
     private AnalogPotentiometer elevationSensor = new AnalogPotentiometer(Pin.Shooter.Sensor.elevation);
 
     public Shooter() {
+
         Utility.TalonFXInit(lFlywheelFalcon);
         Utility.TalonFXInit(rFlywheelFalcon);
         lFlywheelFalcon.setInverted(false);
@@ -43,7 +48,10 @@ public class Shooter extends SubsystemBase {
 
         Utility.configTalonFXPID(lFlywheelFalcon, 0.1097, 0.22, 0, 0, 0);
         Utility.configTalonFXPID(rFlywheelFalcon, 0.1097, 0.22, 0, 0, 0);
-        Utility.configTalonSRXPID(rotateTalon, 0.1097, 0.22, 0, 0, 0, 0);
+        // Utility.configTalonSRXPID(rotateTalon, 0.1097, 0.22, 0, 0, 0, 0);
+        // Utility.configTalonSRXPID(rotateTalon, 0.0, 0.4, 0.0002, 40, 150, 0.5);
+        Utility.configTalonSRXPID(elevateTalon , 0.0, 0.4, 0.0002, 40, 150, 0.5);
+
 
         lFlywheelFalcon.configVoltageCompSaturation(12); // "full output" will now scale to 11 Volts for all control
                                                              // modes when enabled.
@@ -51,20 +59,28 @@ public class Shooter extends SubsystemBase {
         lFlywheelFalcon.enableVoltageCompensation(true);
         rFlywheelFalcon.enableVoltageCompensation(true);
 
-    }
+        lFlywheelFalcon.setNeutralMode(NeutralMode.Coast);
+        rFlywheelFalcon.setNeutralMode(NeutralMode.Coast);
 
-    public void TestMotor(double Speed) {
-        Speed = (Speed - 1) / 2;
-        lFlywheelFalcon.set(ControlMode.PercentOutput, Speed);
-        SmartDashboard.putNumber("Shooter motor velocity",
-                -testMotorSensorCollection.getIntegratedSensorVelocity() / 204.8 * 60);
-        SmartDashboard.putNumber("Shooter Control Value", -Speed);
+        // rotateTalon.overrideLimitSwitchesEnable(true);
+        // rotateTalon.overrideLimitSwitchesEnable(false);
+        rotateTalon.configReverseLimitSwitchSource(LimitSwitchSource.FeedbackConnector, LimitSwitchNormal.NormallyOpen, rotateTalon.getDeviceID());
+        rotateTalon.configForwardLimitSwitchSource(LimitSwitchSource.FeedbackConnector, LimitSwitchNormal.NormallyOpen, rotateTalon.getDeviceID());
+
+        // rotateTalon.configForwardLimitSwitchSource(RemoteLimitSwitchSource.RemoteTalonSRX, LimitSwitchNormal.NormallyOpen, rotateTalon.getDeviceID());
+        // rotateTalon.configReverseLimitSwitchSource(RemoteLimitSwitchSource.RemoteTalonSRX, LimitSwitchNormal.NormallyOpen, rotateTalon.getDeviceID());
+
+        // rotateTalon.configLimitSwitchDisableNeutralOnLOS(limitSwitchDisableNeutralOnLOS, timeoutMs)
+
     }
 
     // This method will be called once per scheduler run
     @Override
     public void periodic() {
         SmartDashboard.putNumber("Shooter elevation", getElevation());
+        SmartDashboard.putNumber("rotate v", rotateTalon.getMotorOutputVoltage());
+        SmartDashboard.putNumber("limit switch", rotateTalon.isFwdLimitSwitchClosed());
+        SmartDashboard.putNumber("rev limit switch", rotateTalon.isRevLimitSwitchClosed());
     }
 
     /**
@@ -73,8 +89,9 @@ public class Shooter extends SubsystemBase {
     public void shoot() {
         lFlywheelFalcon.set(TalonFXControlMode.Velocity, Constants.Shooter.flywheelTargetSpeed * Constants.falconVelocityConstant);
         rFlywheelFalcon.set(TalonFXControlMode.Velocity, -Constants.Shooter.flywheelTargetSpeed * Constants.falconVelocityConstant);
-        // if (lFlywheelFalcon.getActiveTrajectoryVelocity())
-        loadBallTalon.set(ControlMode.PercentOutput, Constants.loadBallTalonOutput);
+        if (lFlywheelFalcon.getSelectedSensorVelocity() >= (Constants.Shooter.flywheelTargetSpeed - Constants.Shooter.flywheelSpeedTolerance) * Constants.falconVelocityConstant) {
+            loadBallTalon.set(ControlMode.PercentOutput, Constants.loadBallTalonOutput);
+        }
     }
 
     /**
@@ -82,10 +99,10 @@ public class Shooter extends SubsystemBase {
      */
     public void stop() {
         loadBallTalon.set(ControlMode.PercentOutput, 0);
-        rotateTalon.set(ControlMode.Velocity, 0);
-        elevateTalon.set(ControlMode.Velocity, 0);
-        // lFlywheelFalcon.set(TalonFXControlMode.Velocity, 0.8*Constants.Shooter.flywheelTargetSpeed * Constants.falconVelocityConstant);
-        // rFlywheelFalcon.set(TalonFXControlMode.Velocity, -0.8*Constants.Shooter.flywheelTargetSpeed * Constants.falconVelocityConstant);
+        rotateTalon.set(ControlMode.PercentOutput, 0);
+        elevateTalon.set(ControlMode.PercentOutput, 0);
+        // lFlywheelFalcon.set(TalonFXControlMode.Velocity, 0.4*Constants.Shooter.flywheelTargetSpeed * Constants.falconVelocityConstant);
+        // rFlywheelFalcon.set(TalonFXControlMode.Velocity, -0.4*Constants.Shooter.flywheelTargetSpeed * Constants.falconVelocityConstant);
     }
 
     /**
@@ -93,15 +110,25 @@ public class Shooter extends SubsystemBase {
      * @param velocity
      */
     public void rotate(double velocity) {
-        rotateTalon.set(ControlMode.Velocity, velocity);
+        // rotateTalon.set(TalonSRXControlMode.Velocity, velocity*Constants.Shooter.aimConstant);
+        if (velocity > 0) {
+            rotateTalon.set(TalonSRXControlMode.PercentOutput, 0.2);
+        }
+        else if (velocity < 0) {
+            rotateTalon.set(TalonSRXControlMode.PercentOutput, -0.2);
+        }
+        System.out.println("rotating");
     }
 
     /**
      * Change the elevation of shooter.
      * @param elevation The target elevation, in degree.
      */
-    public void elevate(double elevation) {
-        elevateTalon.set(ControlMode.Position, 0);
+    public void elevate(double targetElevation) {
+        double elevationError = getElevation() - targetElevation;
+        double kp = 0.1;
+        double elevationAdjustment = kp * elevationError;
+        elevateTalon.set(TalonSRXControlMode.Velocity, elevationAdjustment);
     }
 
     public double getElevation() {

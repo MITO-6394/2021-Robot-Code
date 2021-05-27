@@ -25,8 +25,8 @@ public class Utility {
 
         _talon.configNominalOutputForward(0, Constants.kTimeoutMs);
         _talon.configNominalOutputReverse(0, Constants.kTimeoutMs);
-        _talon.configPeakOutputForward(1, Constants.kTimeoutMs);
-        _talon.configPeakOutputReverse(-1, Constants.kTimeoutMs);
+        _talon.configPeakOutputForward(1.0, Constants.kTimeoutMs);
+        _talon.configPeakOutputReverse(-1.0, Constants.kTimeoutMs);
     }
 
     // TalonSRX init

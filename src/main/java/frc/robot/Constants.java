@@ -25,9 +25,14 @@ public final class Constants {
 	// Velocity constants
 
 	// Multiply this constant with the target RPM to get the velocity input of TalonFX in units/100ms.
-	public static final double falconVelocityConstant = 2048 / 600.0;
+	public static final double falconVelocityConstant = 4 * 2048 / 600.0;
 	// Multiply this constant with the target RPM to get the velocity input of TalonSRX in units/100ms.
-	public static final double talonVelocityConstant = 4096 / 600.0;
+	public static final double talonVelocityConstant = 4 * 1024 / 600.0;
+
+	// Position constatns
+	
+	public static final double falconPositionConstant = 2048;
+	public static final double talonPositionConstant = 4096;
 
 	//rotation
 	public static final double kTurnToleranceDeg = 1;
@@ -51,8 +56,10 @@ public final class Constants {
 
 	public static final class Shooter {
 		
-		public static final int flywheelTargetSpeed = 4000;
-		public static final int rotateTargetSpeed = 400;
+		public static final int flywheelTargetSpeed = 1000;
+		public static final int rotateTargetSpeed = 650;
+		public static final int flywheelSpeedTolerance = 100;
+		public static final double aimConstant = Constants.falconVelocityConstant * 75;
 
 	}
 
@@ -77,9 +84,9 @@ public final class Constants {
 
 	// limelight
 	public static final double kpAim = -0.1;
-	public static final double minAimCommend = 0.05;
-	public static final double kTxTorrance = 0;
-	public static final double kTyTorrance = 0;
+	public static final double minAimCommand = 0.05;
+	public static final double kTxTolerance = 0;
+	public static final double kTyTolerance = 0;
 	public static final double kpDistance = -0.1;
 
 	// spinner(postion control)
@@ -87,18 +94,19 @@ public final class Constants {
     
     public static final class Climber {
 
-		public static final double stretchTargetSpeed = 1000;
-		public static final double telescopeTargetSpeed = 1000;
+		public static final double stretchTargetPos = 0.1;
+		public static final double telescopeTargetPos = 0.1;
+		public static final double telescopeTargetSpeed = 400;
 
 	}
 
     public static final class Drum {
 
         // The percentage output of the drum's rotation when intaking balls
-        public static final double intakeOutput = 1.0;
+        public static final double intakeOutput = 0.7;
 
         // The percentage output of the drum's rotation when loading balls
-        public static final double loadOutput = 1.0;
+        public static final double loadOutput = 0.7;
 
     }
 

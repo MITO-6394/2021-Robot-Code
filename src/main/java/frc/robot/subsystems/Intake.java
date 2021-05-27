@@ -47,9 +47,13 @@ public class Intake extends SubsystemBase {
     public void deploy() {
         deployState = !deployState;
         deploySolenoid.set(deployState ? Value.kForward : Value.kReverse);
-        deploySolenoid.set(Value.kOff);
+        // deploySolenoid.set(Value.kOff);
         // deploySolenoid.toggle();
         // SmartDashboard.putBoolean("Intake deployed?", deployState);
+    }
+
+    public void hold() {
+        deploySolenoid.set(Value.kOff);
     }
 
     /**

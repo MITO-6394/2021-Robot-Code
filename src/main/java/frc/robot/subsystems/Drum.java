@@ -19,6 +19,7 @@ public class Drum extends SubsystemBase {
     private TalonSRX rotateTalon = new TalonSRX(Pin.Drum.Motor.rotateTalon);
 
     public Drum() {
+        rotateTalon.setInverted(true);
     }
 
     @Override
