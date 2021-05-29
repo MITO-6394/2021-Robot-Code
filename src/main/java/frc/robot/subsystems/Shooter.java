@@ -31,7 +31,6 @@ public class Shooter extends SubsystemBase {
 
     private WPI_TalonFX lFlywheelFalcon = new WPI_TalonFX(Pin.Shooter.Motor.lFlywheelFalcon);
     private WPI_TalonFX rFlywheelFalcon = new WPI_TalonFX(Pin.Shooter.Motor.rFlywheelFalcon);
-    private TalonFXSensorCollection testMotorSensorCollection = lFlywheelFalcon.getSensorCollection();
 
     private TalonSRX loadBallTalon = new TalonSRX(Pin.Shooter.Motor.loadBallTalon);
     private TalonSRX rotateTalon = new TalonSRX(Pin.Shooter.Motor.rotateTalon);
@@ -113,12 +112,6 @@ public class Shooter extends SubsystemBase {
      */
     public void rotate(double velocity) {
         rotateTalon.set(TalonSRXControlMode.Velocity, velocity*Constants.Shooter.aimConstant);
-        // if (velocity > 0) {
-        //     rotateTalon.set(TalonSRXControlMode.PercentOutput, 0.2);
-        // }
-        // else if (velocity < 0) {
-        //     rotateTalon.set(TalonSRXControlMode.PercentOutput, -0.2);
-        // }
     }
 
     /**
@@ -126,10 +119,6 @@ public class Shooter extends SubsystemBase {
      * @param elevation The target elevation, in degree.
      */
     public void elevate(double velocity) {
-        // double elevationError = getElevation() - targetElevation;
-        // double kp = 0.1;
-        // double elevationAdjustment = kp * elevationError;
-        // elevateTalon.set(TalonSRXControlMode.Velocity, elevationAdjustment);
         elevateTalon.set(TalonSRXControlMode.Velocity, Constants.talonVelocityConstant * velocity);
     }
 

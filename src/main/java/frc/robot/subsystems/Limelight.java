@@ -42,6 +42,12 @@ public class Limelight extends SubsystemBase {
         return table.getEntry("ta").getDouble(0);
     }
 
+    public double getEstimatedDistance(double elevation) {
+        double crosshairHeight = 2.49 - 0.76 / 4;
+        double limelightHeight = 0;
+        return (crosshairHeight-limelightHeight) / Math.tan(elevation+getTy());
+    }
+
     // public double getEstimateDistance() {
     // // calibrate the ratio between ta and the actual distance
     // distance = getTa() * Constants.taToDistanceRatio;

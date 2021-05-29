@@ -127,7 +127,7 @@ public final class Constants {
 		public static final double intakeOutput = 0.5;
 
 		// The percentage output of the drum's rotation when loading balls
-		public static final double loadOutput = 0.6;
+		public static final double loadOutput = 0.65;
 
 		public static final double regularOutput = 0.5;
 

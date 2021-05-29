@@ -9,7 +9,6 @@ package frc.robot;
 
 import java.util.List;
 
-import edu.wpi.cscore.UsbCamera;
 import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.first.wpilibj.Compressor;
 import edu.wpi.first.wpilibj.Joystick;
@@ -21,8 +20,6 @@ import edu.wpi.first.wpilibj.controller.SimpleMotorFeedforward;
 import edu.wpi.first.wpilibj.geometry.Pose2d;
 import edu.wpi.first.wpilibj.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.geometry.Translation2d;
-import edu.wpi.first.wpilibj.simulation.JoystickSim;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.trajectory.Trajectory;
 import edu.wpi.first.wpilibj.trajectory.TrajectoryConfig;
 import edu.wpi.first.wpilibj.trajectory.TrajectoryGenerator;
@@ -35,6 +32,7 @@ import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import frc.robot.commands.IntakeBall;
+import frc.robot.commands.LeaveInitialLine;
 import frc.robot.commands.ShootBall;
 import frc.robot.commands.StretchClimber;
 import frc.robot.commands.TelescopeClimber;
@@ -45,18 +43,15 @@ import frc.robot.commands.Aim;
 // import frc.robot.commands.positionControl;
 // import frc.robot.commands.rotationControl;
 // import frc.robot.commands.shooterPrep;
-import frc.robot.commands.turnToAngle;
 import frc.robot.subsystems.Climber;
 // import frc.robot.subsystems.BallIntake;
 import frc.robot.subsystems.Drivetrain;
 import frc.robot.subsystems.Drum;
-import frc.robot.subsystems.ExampleSubsystem;
 import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.Limelight;
 // import frc.robot.subsystems.Shooter;
 // import frc.robot.subsystems.Spinner;
 import frc.robot.subsystems.Shooter;
-import frc.robot.TriggerPressed;
 
 /**
  * This class is where the bulk of the robot should be declared. Since
@@ -72,27 +67,20 @@ public class RobotContainer {
 
     private final Compressor compressor = new Compressor();
     private final XboxController controller = new XboxController(Pin.Controller.moveStick);
-    private final Joystick functionStick = new Joystick(Pin.Controller.functionStick);
     private final Shooter shooter = new Shooter();
     private final Intake intake = new Intake();
     private final Drum drum = new Drum();
     private final Climber climber = new Climber();
     private final Drivetrain drivetrain = new Drivetrain();
     private final Limelight limelight = new Limelight();
-    private final ExampleSubsystem example = new ExampleSubsystem();
 
     private final Aim aim = new Aim(limelight, shooter);
-    // private final IntakeBall intakeBall = new IntakeBall(intake, drum,
-    // controller.getTriggerAxis(Hand.kLeft));
     private final IntakeBall intakeBall = new IntakeBall(intake, drum);
     private final ShootBall shootBall = new ShootBall(shooter, drum);
     private final StretchClimber stretchClimber = new StretchClimber(climber);
     private final TelescopeClimber telescopeClimber = new TelescopeClimber(climber);
-    // private Shooter mShooter = new Shooter();
-    // private BallIntake mBallIntake = new BallIntake();
-    // private Spinner mSpinner = new Spinner();
+    private final LeaveInitialLine leaveInitialLine = new LeaveInitialLine(limelight, drivetrain, shooter);
 
-    // private final ExampleSubsystem m_exampleSubsystem = new ExampleSubsystem();
 
     /**
      * The container for the robot. Contains subsystems, OI devices, and commands.
@@ -160,7 +148,7 @@ public class RobotContainer {
         new TriggerPressed(controller, Hand.kRight).whileActiveOnce(intakeBall);
 
         // Shoot balls
-        new TriggerPressed(controller, Hand.kLeft).whileActiveOnce(shootBall);
+        new TriggerPressed(controller, Hand.kLeft).whileActiveContinuous(shootBall, false);
 
         // Rotate shooter leftward
         new JoystickButton(controller, Pin.Controller.Button.rotateShooterLeftward)
@@ -190,7 +178,7 @@ public class RobotContainer {
 
         // Aim
         // new PerpetualCommand(aim);
-        new JoystickButton(controller, Pin.Controller.Button.holdIntake).whenHeld(aim);
+        new JoystickButton(controller, Pin.Controller.Button.aim).whenHeld(aim);
 
 
         // Down the shooter
@@ -250,64 +238,68 @@ public class RobotContainer {
         return axis;
     }
 
-    /**
-     * Use this to pass the autonomous command to the main {@link Robot} class.
-     *
-     * @return the command to run in autonomous
-     */
     public Command getAutonomousCommand() {
-
-        // Create a voltage constraint to ensure we don't accelerate too fast
-        var autoVoltageConstraint =
-        new DifferentialDriveVoltageConstraint(
-            new SimpleMotorFeedforward(Constants.Drivetrain.ks,
-                                    Constants.Drivetrain.kv,
-                                    Constants.Drivetrain.ka),
-                Constants.Drivetrain.kDriveKinematics,
-                10);
-
-        // Create config for trajectory
-        TrajectoryConfig config =
-        new TrajectoryConfig(Constants.Drivetrain.kMaxSpeed,
-                            Constants.Drivetrain.kMaxAcceleration)
-            // Add kinematics to ensure max speed is actually obeyed
-            .setKinematics(Constants.Drivetrain.kDriveKinematics)
-            // Apply the voltage constraint
-            .addConstraint(autoVoltageConstraint);
-
-        // An example trajectory to follow.  All units in meters.
-        Trajectory trajectory = TrajectoryGenerator.generateTrajectory(
-            // Start at the origin facing the +X direction
-            new Pose2d(0, 0, new Rotation2d(0)),
-            // Pass through these two interior waypoints, making an 's' curve path
-            List.of(
-                new Translation2d(1, 0),
-                new Translation2d(2, 0)
-            ),
-            // End 3 meters straight ahead of where we started, facing forward
-            new Pose2d(3, 0, new Rotation2d(0)),
-            // Pass config
-            config
-        );
-
-        RamseteCommand ramseteCommand = new RamseteCommand(trajectory, drivetrain::getPose,
-                new RamseteController(Constants.Drivetrain.kRamseteB, Constants.Drivetrain.kRamseteZeta),
-                new SimpleMotorFeedforward(Constants.Drivetrain.ks, Constants.Drivetrain.kv, Constants.Drivetrain.ka),
-                Constants.Drivetrain.kDriveKinematics, drivetrain::getWheelSpeeds,
-                new PIDController(Constants.Drivetrain.kPDriveVel, 0, 0),
-                new PIDController(Constants.Drivetrain.kPDriveVel, 0, 0),
-                // RamseteCommand passes volts to the callback
-                drivetrain::tankDriveVolts, drivetrain);
-
-
-    //    SequentialCommandGroup autonomousCommand = new SequentialCommandGroup(ramseteCommand, aim, shootBall);
-
-        // Reset odometry to the starting pose of the trajectory.
-        drivetrain.resetOdometry(trajectory.getInitialPose());
-
-        // Run path following command, then stop at the end.
-        return ramseteCommand.andThen(() -> drivetrain.tankDriveVolts(0, 0));
-        
+        return new SequentialCommandGroup(leaveInitialLine, aim, shootBall);
     }
+
+    // /**
+    //  * Use this to pass the autonomous command to the main {@link Robot} class.
+    //  *
+    //  * @return the command to run in autonomous
+    //  */
+    // public Command getAutonomousCommand() {
+
+    //     // Create a voltage constraint to ensure we don't accelerate too fast
+    //     var autoVoltageConstraint =
+    //     new DifferentialDriveVoltageConstraint(
+    //         new SimpleMotorFeedforward(Constants.Drivetrain.ks,
+    //                                 Constants.Drivetrain.kv,
+    //                                 Constants.Drivetrain.ka),
+    //             Constants.Drivetrain.kDriveKinematics,
+    //             10);
+
+    //     // Create config for trajectory
+    //     TrajectoryConfig config =
+    //     new TrajectoryConfig(Constants.Drivetrain.kMaxSpeed,
+    //                         Constants.Drivetrain.kMaxAcceleration)
+    //         // Add kinematics to ensure max speed is actually obeyed
+    //         .setKinematics(Constants.Drivetrain.kDriveKinematics)
+    //         // Apply the voltage constraint
+    //         .addConstraint(autoVoltageConstraint);
+
+    //     // An example trajectory to follow.  All units in meters.
+    //     Trajectory trajectory = TrajectoryGenerator.generateTrajectory(
+    //         // Start at the origin facing the +X direction
+    //         new Pose2d(0, 0, new Rotation2d(0)),
+    //         // Pass through these two interior waypoints, making an 's' curve path
+    //         List.of(
+    //             new Translation2d(1, 0),
+    //             new Translation2d(2, 0)
+    //         ),
+    //         // End 3 meters straight ahead of where we started, facing forward
+    //         new Pose2d(3, 0, new Rotation2d(0)),
+    //         // Pass config
+    //         config
+    //     );
+
+    //     RamseteCommand ramseteCommand = new RamseteCommand(trajectory, drivetrain::getPose,
+    //             new RamseteController(Constants.Drivetrain.kRamseteB, Constants.Drivetrain.kRamseteZeta),
+    //             new SimpleMotorFeedforward(Constants.Drivetrain.ks, Constants.Drivetrain.kv, Constants.Drivetrain.ka),
+    //             Constants.Drivetrain.kDriveKinematics, drivetrain::getWheelSpeeds,
+    //             new PIDController(Constants.Drivetrain.kPDriveVel, 0, 0),
+    //             new PIDController(Constants.Drivetrain.kPDriveVel, 0, 0),
+    //             // RamseteCommand passes volts to the callback
+    //             drivetrain::tankDriveVolts, drivetrain);
+
+
+    // //    SequentialCommandGroup autonomousCommand = new SequentialCommandGroup(ramseteCommand, aim, shootBall);
+
+    //     // Reset odometry to the starting pose of the trajectory.
+    //     drivetrain.resetOdometry(trajectory.getInitialPose());
+
+    //     // Run path following command, then stop at the end.
+    //     return ramseteCommand.andThen(() -> drivetrain.tankDriveVolts(0, 0));
+        
+    // }
 
 }

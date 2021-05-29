@@ -81,10 +81,8 @@ public class Aim extends CommandBase {
             SmartDashboard.putBoolean("Aimed?", true);
             return true;
         }
-        else {
-            SmartDashboard.putBoolean("Aimed?", false);
-            return false;
-        }
+        SmartDashboard.putBoolean("Aimed?", false);
+        return false;
     }
 
 }
