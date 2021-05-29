@@ -19,6 +19,8 @@ public class Aim extends CommandBase {
     private Limelight limelight;
     private Shooter shooter;
 
+    double tx;
+    double ty;
     double headError;
     double steeringAdjustment;
 
@@ -39,10 +41,12 @@ public class Aim extends CommandBase {
     public void execute() {
         steeringAdjustment = 0.0;
         if (limelight.isTargetFound()) {
+            SmartDashboard.putBoolean("Target found?", true);
+
             headError = -limelight.getTx();
 
-            Double tx = limelight.getTx();
-            Double ty = limelight.getTy();
+            tx = limelight.getTx();
+            ty = limelight.getTy();
 
             SmartDashboard.putNumber("tx", tx);
             SmartDashboard.putNumber("ty", ty);
@@ -57,11 +61,12 @@ public class Aim extends CommandBase {
 
             shooter.rotate(steeringAdjustment);
 
+
             // mShooter.shooterRotation(steeringAdjustment);
             // drivetrain.velocityDrive(0.0, -steeringAdjustment * Constants.aimRate);
         }
         else {
-            SmartDashboard.putBoolean("Aimed?", false);
+            SmartDashboard.putBoolean("Target found?", false);
         }
     }
 
@@ -70,10 +75,16 @@ public class Aim extends CommandBase {
 
     }
 
-    // Returns true when the command should end.
     @Override
     public boolean isFinished() {
-        return Math.abs(limelight.getTx()) < Constants.kTxTolerance;
+        if (Math.abs(tx) < Constants.kTxTolerance) {
+            SmartDashboard.putBoolean("Aimed?", true);
+            return true;
+        }
+        else {
+            SmartDashboard.putBoolean("Aimed?", false);
+            return false;
+        }
     }
 
 }

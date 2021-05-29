@@ -8,6 +8,7 @@
 package frc.robot.commands;
 
 import edu.wpi.first.wpilibj2.command.CommandBase;
+import frc.robot.Constants;
 import frc.robot.subsystems.Climber;
 
 
@@ -30,6 +31,7 @@ public class StretchClimber extends CommandBase {
     @Override
     public void execute() {
         climber.stretch();
+        Constants.Shooter.flywheelTargetSpeed = 0;
         System.out.println("StretchClimber executing");
     }
 

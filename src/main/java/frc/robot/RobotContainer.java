@@ -7,22 +7,33 @@
 
 package frc.robot;
 
-import javax.naming.LimitExceededException;
+import java.util.List;
 
+import edu.wpi.cscore.UsbCamera;
+import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.first.wpilibj.Compressor;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.GenericHID.Hand;
+import edu.wpi.first.wpilibj.controller.PIDController;
+import edu.wpi.first.wpilibj.controller.RamseteController;
+import edu.wpi.first.wpilibj.controller.SimpleMotorFeedforward;
+import edu.wpi.first.wpilibj.geometry.Pose2d;
+import edu.wpi.first.wpilibj.geometry.Rotation2d;
+import edu.wpi.first.wpilibj.geometry.Translation2d;
 import edu.wpi.first.wpilibj.simulation.JoystickSim;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj.trajectory.Trajectory;
+import edu.wpi.first.wpilibj.trajectory.TrajectoryConfig;
+import edu.wpi.first.wpilibj.trajectory.TrajectoryGenerator;
+import edu.wpi.first.wpilibj.trajectory.constraint.DifferentialDriveVoltageConstraint;
+import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.PerpetualCommand;
+import edu.wpi.first.wpilibj2.command.RamseteCommand;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
-import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
-import edu.wpi.first.wpilibj2.command.button.POVButton;
-import frc.robot.commands.ExampleCommand;
 import frc.robot.commands.IntakeBall;
 import frc.robot.commands.ShootBall;
 import frc.robot.commands.StretchClimber;
@@ -57,6 +68,8 @@ import frc.robot.TriggerPressed;
 public class RobotContainer {
     // The robot's subsystems and commands are defined here...
     // private Joystick moveStick = new Joystick(Pin.moveStickPort);
+    // private final UsbCamera camera = new UsbCamera("Camera", 1);
+
     private final Compressor compressor = new Compressor();
     private final XboxController controller = new XboxController(Pin.Controller.moveStick);
     private final Joystick functionStick = new Joystick(Pin.Controller.functionStick);
@@ -69,7 +82,8 @@ public class RobotContainer {
     private final ExampleSubsystem example = new ExampleSubsystem();
 
     private final Aim aim = new Aim(limelight, shooter);
-//     private final IntakeBall intakeBall = new IntakeBall(intake, drum, controller.getTriggerAxis(Hand.kLeft));
+    // private final IntakeBall intakeBall = new IntakeBall(intake, drum,
+    // controller.getTriggerAxis(Hand.kLeft));
     private final IntakeBall intakeBall = new IntakeBall(intake, drum);
     private final ShootBall shootBall = new ShootBall(shooter, drum);
     private final StretchClimber stretchClimber = new StretchClimber(climber);
@@ -86,19 +100,29 @@ public class RobotContainer {
     public RobotContainer() {
         // Configure the button bindings
         configureButtonBindings();
-        
-        drivetrain.setDefaultCommand(
-            new RunCommand(() -> drivetrain.velocityDrive(axisZeroCorrect(controller.getRawAxis(Pin.Controller.Axis.forward)),
-                    axisZeroCorrect(controller.getRawAxis(Pin.Controller.Axis.rotation))), drivetrain));
-            
+
+        CameraServer.getInstance().startAutomaticCapture(0);
+        // CameraServer.getInstance().addSwitchedCamera("font");
+
+        drivetrain.setDefaultCommand(new RunCommand(
+                () -> drivetrain.velocityDrive(axisZeroCorrect(controller.getRawAxis(Pin.Controller.Axis.forward)),
+                        axisZeroCorrect(controller.getRawAxis(Pin.Controller.Axis.rotation))),
+                drivetrain));
+
         // limelight.setDefaultCommand(defaultCommand);
-        shooter.setDefaultCommand(new RunCommand(shooter::stop, shooter));
-        // drum.setDefaultCommand(new RunCommand(() -> drum.stop(), drum));
-        // intake.setDefaultCommand(new RunCommand(() -> intake.launch(controller.getTriggerAxis(Hand.kLeft)), intake));
-        // drum.setDefaultCommand(new RunCommand(() -> drum.rotate(Constants.Drum.intakeOutput, controller.getTriggerAxis(Hand.kLeft), controller.getTriggerAxis(Hand.kRight)), drum));
-        // shooter.setDefaultCommand(new RunCommand(() -> shooter.shoot(controller.getTriggerAxis(Hand.kRight)), shooter));
-        //intake.setDefaultCommand(new IntakeBall(intake, drum, controller.getTriggerAxis(Hand.kLeft)));
-                        // m_shooter.setDefaultCommand(
+        shooter.setDefaultCommand(new RunCommand(shooter::defaultState, shooter));
+        drum.setDefaultCommand(new RunCommand(() -> drum.rotate(Constants.Drum.regularOutput), drum));
+        // intake.setDefaultCommand(new RunCommand(() ->
+        // intake.launch(controller.getTriggerAxis(Hand.kLeft)), intake));
+        // drum.setDefaultCommand(new RunCommand(() ->
+        // drum.rotate(Constants.Drum.intakeOutput,
+        // controller.getTriggerAxis(Hand.kLeft),
+        // controller.getTriggerAxis(Hand.kRight)), drum));
+        // shooter.setDefaultCommand(new RunCommand(() ->
+        // shooter.shoot(controller.getTriggerAxis(Hand.kRight)), shooter));
+        // intake.setDefaultCommand(new IntakeBall(intake, drum,
+        // controller.getTriggerAxis(Hand.kLeft)));
+        // m_shooter.setDefaultCommand(
         // new RunCommand(() ->
         // m_shooter.TestMotor(moveStick.getRawAxis(Constants.MotorSpeed)), m_shooter));
 
@@ -116,54 +140,66 @@ public class RobotContainer {
      * passing it to a {@link edu.wpi.first.wpilibj2.command.button.JoystickButton}.
      */
     private void configureButtonBindings() {
-        
-        // new JoystickButton(controller, Pin.Controller.Button.autoAim).whileActiveContinuous(dummyAutoAim);
+
+        // new JoystickButton(controller,
+        // Pin.Controller.Button.autoAim).whileActiveContinuous(dummyAutoAim);
 
         // Shift gearbox
         new JoystickButton(controller, Pin.Controller.Button.shiftGearbox)
-            .whenActive(new InstantCommand(drivetrain::shiftGearbox, drivetrain));
+                .whenActive(new InstantCommand(drivetrain::shiftGearbox, drivetrain));
 
         // Deploy intake system
         new JoystickButton(controller, Pin.Controller.Button.deployIntake)
-            .whenActive(new InstantCommand(intake::deploy, intake));
+                .whenActive(new InstantCommand(intake::deploy, intake));
 
         // Hold intake system
-        new JoystickButton(controller, Pin.Controller.Button.holdIntake)
-            .whenActive(new InstantCommand(intake::hold, intake));
+        // new JoystickButton(controller, Pin.Controller.Button.holdIntake)
+        //         .whenActive(new InstantCommand(intake::hold, intake));
 
         // Intake balls
-        new TriggerPressed(controller, Hand.kLeft).whileActiveOnce(intakeBall);
+        new TriggerPressed(controller, Hand.kRight).whileActiveOnce(intakeBall);
 
         // Shoot balls
-        new TriggerPressed(controller, Hand.kRight).whileActiveOnce(shootBall);
+        new TriggerPressed(controller, Hand.kLeft).whileActiveOnce(shootBall);
 
         // Rotate shooter leftward
         new JoystickButton(controller, Pin.Controller.Button.rotateShooterLeftward)
-            .whileHeld(new InstantCommand(() -> shooter.rotate(-Constants.Shooter.rotateTargetSpeed), shooter));
+                .whileHeld(new InstantCommand(() -> shooter.rotate(Constants.Shooter.rotateTargetSpeed), shooter));
 
         // Rotate shooter rightward
         new JoystickButton(controller, Pin.Controller.Button.rotateShooterRightward)
-            .whileHeld(new InstantCommand(() -> shooter.rotate(Constants.Shooter.rotateTargetSpeed), shooter));
+                .whileHeld(new InstantCommand(() -> shooter.rotate(-Constants.Shooter.rotateTargetSpeed), shooter));
 
         // Release climber
         new JoystickButton(controller, Pin.Controller.Button.releaseClimber)
-            .whenActive(new InstantCommand(climber::release, climber));
+                .whenActive(new InstantCommand(climber::release, climber));
 
         // Stretch climber
-        new JoystickButton(controller, Pin.Controller.Button.stretchClimber)
-            .whenActive(stretchClimber);
+        new JoystickButton(controller, Pin.Controller.Button.stretchClimber).whenActive(stretchClimber);
 
         // Telescope climber
-        new JoystickButton(controller, Pin.Controller.Button.telescopeClimber)
-            .whenActive(telescopeClimber);
+        new JoystickButton(controller, Pin.Controller.Button.telescopeClimber).whenActive(telescopeClimber);
+
+        // // Increase elevation
+        // new JoystickButton(controller, Pin.Controller.Button.stretchClimber)
+        // .whileHeld(new InstantCommand(() -> shooter.elevate(200), shooter));
+
+        // // Decrease
+        // new JoystickButton(controller, Pin.Controller.Button.telescopeClimber)
+        // .whileHeld(new InstantCommand(() -> shooter.elevate(-200), shooter));
 
         // Aim
-        new PerpetualCommand(aim);
+        // new PerpetualCommand(aim);
+        new JoystickButton(controller, Pin.Controller.Button.holdIntake).whenHeld(aim);
 
+
+        // Down the shooter
+        // new TriggerPressed(controller, Hand.kLeft).when(new InstantCommand(() ->
+        // shooter.elevateToTargetElevation(11)));
 
         // // Test solenoid
         // new JoystickButton(controller, XboxController.Button.kY.value)
-        //         .whenActive(new InstantCommand(example::shiftSolenoid, example));
+        // .whenActive(new InstantCommand(example::shiftSolenoid, example));
 
         // Spinner
         // new JoystickButton(functionStick, Constants.bPositionControl)
@@ -206,12 +242,72 @@ public class RobotContainer {
 
     }
 
-
     private double axisZeroCorrect(double axis) {
-        if (axis <= Constants.Controller.axisZeroCorrectionRange && axis >= -Constants.Controller.axisZeroCorrectionRange) {
-                return -0.01;
+        if (axis <= Constants.Controller.axisZeroCorrectionRange
+                && axis >= -Constants.Controller.axisZeroCorrectionRange) {
+            return -0.01;
         }
         return axis;
+    }
+
+    /**
+     * Use this to pass the autonomous command to the main {@link Robot} class.
+     *
+     * @return the command to run in autonomous
+     */
+    public Command getAutonomousCommand() {
+
+        // Create a voltage constraint to ensure we don't accelerate too fast
+        var autoVoltageConstraint =
+        new DifferentialDriveVoltageConstraint(
+            new SimpleMotorFeedforward(Constants.Drivetrain.ks,
+                                    Constants.Drivetrain.kv,
+                                    Constants.Drivetrain.ka),
+                Constants.Drivetrain.kDriveKinematics,
+                10);
+
+        // Create config for trajectory
+        TrajectoryConfig config =
+        new TrajectoryConfig(Constants.Drivetrain.kMaxSpeed,
+                            Constants.Drivetrain.kMaxAcceleration)
+            // Add kinematics to ensure max speed is actually obeyed
+            .setKinematics(Constants.Drivetrain.kDriveKinematics)
+            // Apply the voltage constraint
+            .addConstraint(autoVoltageConstraint);
+
+        // An example trajectory to follow.  All units in meters.
+        Trajectory trajectory = TrajectoryGenerator.generateTrajectory(
+            // Start at the origin facing the +X direction
+            new Pose2d(0, 0, new Rotation2d(0)),
+            // Pass through these two interior waypoints, making an 's' curve path
+            List.of(
+                new Translation2d(1, 0),
+                new Translation2d(2, 0)
+            ),
+            // End 3 meters straight ahead of where we started, facing forward
+            new Pose2d(3, 0, new Rotation2d(0)),
+            // Pass config
+            config
+        );
+
+        RamseteCommand ramseteCommand = new RamseteCommand(trajectory, drivetrain::getPose,
+                new RamseteController(Constants.Drivetrain.kRamseteB, Constants.Drivetrain.kRamseteZeta),
+                new SimpleMotorFeedforward(Constants.Drivetrain.ks, Constants.Drivetrain.kv, Constants.Drivetrain.ka),
+                Constants.Drivetrain.kDriveKinematics, drivetrain::getWheelSpeeds,
+                new PIDController(Constants.Drivetrain.kPDriveVel, 0, 0),
+                new PIDController(Constants.Drivetrain.kPDriveVel, 0, 0),
+                // RamseteCommand passes volts to the callback
+                drivetrain::tankDriveVolts, drivetrain);
+
+
+    //    SequentialCommandGroup autonomousCommand = new SequentialCommandGroup(ramseteCommand, aim, shootBall);
+
+        // Reset odometry to the starting pose of the trajectory.
+        drivetrain.resetOdometry(trajectory.getInitialPose());
+
+        // Run path following command, then stop at the end.
+        return ramseteCommand.andThen(() -> drivetrain.tankDriveVolts(0, 0));
+        
     }
 
 }

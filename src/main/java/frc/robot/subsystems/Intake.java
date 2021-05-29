@@ -31,7 +31,8 @@ public class Intake extends SubsystemBase {
     public Intake() {
         Utility.TalonFXInit(intakeFalcon);
         intakeFalcon.setInverted(false);
-        deploySolenoid.set(Value.kReverse);
+        // deploySolenoid.set(Value.kReverse
+        // );
         // deploySolenoid.set(Value.kOff);
     }
 
@@ -47,13 +48,14 @@ public class Intake extends SubsystemBase {
     public void deploy() {
         deployState = !deployState;
         deploySolenoid.set(deployState ? Value.kForward : Value.kReverse);
-        // deploySolenoid.set(Value.kOff);
+        SmartDashboard.putString("intake state", deploySolenoid.get().toString());
+        // deploySolenoid.set(Value.kForward);
         // deploySolenoid.toggle();
         // SmartDashboard.putBoolean("Intake deployed?", deployState);
     }
 
     public void hold() {
-        deploySolenoid.set(Value.kOff);
+        // deploySolenoid.set(Value.kOff);
     }
 
     /**

@@ -20,6 +20,7 @@ import com.ctre.phoenix.motorcontrol.TalonFXSensorCollection;
 
 import edu.wpi.first.wpilibj.Compressor;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
+import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.PWMTalonFX;
 import edu.wpi.first.wpilibj.PWMVictorSPX;
 import edu.wpi.first.wpilibj.SPI;
@@ -27,6 +28,9 @@ import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj.SpeedControllerGroup;
 import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
+import edu.wpi.first.wpilibj.geometry.Pose2d;
+import edu.wpi.first.wpilibj.kinematics.DifferentialDriveOdometry;
+import edu.wpi.first.wpilibj.kinematics.DifferentialDriveWheelSpeeds;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
@@ -37,10 +41,6 @@ public class Drivetrain extends SubsystemBase {
 
     private final WPI_TalonFX rFalconMaster = new WPI_TalonFX(Pin.Drivetrain.Motor.rFalconMaster);
     private final WPI_TalonFX rFalconSlave = new WPI_TalonFX(Pin.Drivetrain.Motor.rFalconSlave);
-    // private SpeedControllerGroup rControllerGroup = new
-    // SpeedControllerGroup(rFalconMaster, rFalconSlave);
-    // private SpeedControllerGroup lControllerGroup = new
-    // SpeedControllerGroup(lFalconMaster, lFalconSlave);
 
     private final WPI_TalonFX lFalconMaster = new WPI_TalonFX(Pin.Drivetrain.Motor.lFalconMaster);
     private final WPI_TalonFX lFalconSlave = new WPI_TalonFX(Pin.Drivetrain.Motor.lFalconSlave);
@@ -52,7 +52,15 @@ public class Drivetrain extends SubsystemBase {
 
     private final AHRS ahrs = new AHRS(SPI.Port.kMXP);
 
+    private SpeedControllerGroup rControllerGroup = new SpeedControllerGroup(rFalconMaster, rFalconSlave);
+    private SpeedControllerGroup lControllerGroup = new SpeedControllerGroup(lFalconMaster, lFalconSlave);
+    private final DifferentialDrive differentialDrive = new DifferentialDrive(lControllerGroup, rControllerGroup);
+    private final DifferentialDriveOdometry odometry;
+
     private Boolean gearboxState = false;
+
+    private double last_lSpeed = 0;
+    private double last_rSpeed = 0;
     // private int gearState = 0;
 
     // private final SpeedControllerGroup test = new SpeedControllerGroup(new
@@ -68,19 +76,19 @@ public class Drivetrain extends SubsystemBase {
         Utility.TalonFXInit(rFalconMaster);
         Utility.TalonFXInit(rFalconSlave);
 
-        lFalconMaster.configPeakOutputForward(0.2);
-        lFalconMaster.configPeakOutputReverse(-0.2);
-        lFalconSlave.configPeakOutputForward(0.2);
-        lFalconSlave.configPeakOutputReverse(-0.2);
-        rFalconMaster.configPeakOutputForward(0.2);
-        rFalconMaster.configPeakOutputReverse(-0.2);
-        rFalconSlave.configPeakOutputForward(0.2);
-        rFalconSlave.configPeakOutputReverse(-0.2);
+        lFalconMaster.configPeakOutputForward(0.8);
+        lFalconMaster.configPeakOutputReverse(-0.8);
+        lFalconSlave.configPeakOutputForward(0.8);
+        lFalconSlave.configPeakOutputReverse(-0.8);
+        rFalconMaster.configPeakOutputForward(0.8);
+        rFalconMaster.configPeakOutputReverse(-0.8);
+        rFalconSlave.configPeakOutputForward(0.8);
+        rFalconSlave.configPeakOutputReverse(-0.8);
 
-        lFalconMaster.setNeutralMode(NeutralMode.Coast);
-        lFalconSlave.setNeutralMode(NeutralMode.Coast);
-        rFalconMaster.setNeutralMode(NeutralMode.Coast);
-        rFalconSlave.setNeutralMode(NeutralMode.Coast);
+        lFalconMaster.setNeutralMode(NeutralMode.Brake);
+        lFalconSlave.setNeutralMode(NeutralMode.Brake);
+        rFalconMaster.setNeutralMode(NeutralMode.Brake);
+        rFalconSlave.setNeutralMode(NeutralMode.Brake);
 
         // Utility.TalonSRXInit(rFalconMaster);
         // Utility.TalonSRXInit(lFalconMaster);
@@ -93,10 +101,13 @@ public class Drivetrain extends SubsystemBase {
         rFalconMaster.setInverted(false);
         rFalconSlave.setInverted(false);
 
-        Utility.configTalonFXPID(lFalconMaster, 0.1097, 0.22, 0, 0, 0);
-        Utility.configTalonFXPID(rFalconMaster, 0.1097, 0.22, 0, 0, 0);
-        Utility.configTalonFXPID(lFalconSlave, 0.1097, 0.22, 0.0, 0.0, 0);
-        Utility.configTalonFXPID(rFalconSlave, 0.1097, 0.22, 0.0, 0.0, 0);
+        Utility.configTalonFXPID(lFalconMaster, 0.1097, 0.22, 0, 0, 1);
+        Utility.configTalonFXPID(rFalconMaster, 0.1097, 0.22, 0, 0, 1);
+        Utility.configTalonFXPID(lFalconSlave, 0.1097, 0.22, 0, 0, 1);
+        Utility.configTalonFXPID(rFalconSlave, 0.1097, 0.22, 0, 0, 1);
+
+        odometry = new DifferentialDriveOdometry(ahrs.getRotation2d());
+        resetPos();
 
         ahrs.reset();
 
@@ -142,6 +153,15 @@ public class Drivetrain extends SubsystemBase {
 
     // }
 
+    @Override
+    public void periodic() {
+        odometry.update(
+            ahrs.getRotation2d(), 
+            lFalconMaster.getSelectedSensorPosition() / 2048 / 4.4 * 0.479,
+            rFalconMaster.getSelectedSensorPosition() / 2048 / 4.4 * 0.479);
+    }
+
+
     public void velocityDrive(double forward, double rotation) {
         double lSpeed = forward;
         double rSpeed = forward;
@@ -151,6 +171,15 @@ public class Drivetrain extends SubsystemBase {
         lSpeed += (rotation >= 0 ? rotationGain : -rotationGain);
         rSpeed += (rotation >= 0 ? -rotationGain : rotationGain);
 
+        // double lLimit = last_lSpeed + Math.copySign(Constants.Drivetrain.accelerationLimit, last_lSpeed);
+        // if (Math.abs(lSpeed) > Math.abs(lLimit)) {
+        //     lSpeed = lLimit;
+        // }
+        // double rLimit = last_rSpeed + Math.copySign(Constants.Drivetrain.accelerationLimit, last_rSpeed);
+        // if (Math.abs(rSpeed) > Math.abs(rLimit)) {
+        //     rSpeed = rLimit;
+        // }
+
         lSpeed *= Constants.falconVelocityConstant * Constants.drivetrainTargetRPM;
         rSpeed *= Constants.falconVelocityConstant * Constants.drivetrainTargetRPM;
 
@@ -159,8 +188,15 @@ public class Drivetrain extends SubsystemBase {
         rFalconMaster.set(TalonFXControlMode.Velocity, rSpeed);
         rFalconSlave.set(TalonFXControlMode.Velocity, rSpeed);
 
+        last_lSpeed = lSpeed;
+        last_rSpeed = rSpeed;
+
         SmartDashboard.putBoolean("High speed mode?", gearboxState);
 
+        SmartDashboard.putNumber("left1 v", lFalconMaster.getMotorOutputVoltage());
+        SmartDashboard.putNumber("left2 v", lFalconSlave.getMotorOutputVoltage());
+        SmartDashboard.putNumber("right1 v", rFalconMaster.getMotorOutputVoltage());
+        SmartDashboard.putNumber("right2 v", rFalconSlave.getMotorOutputVoltage());
 
     }
 
@@ -169,7 +205,7 @@ public class Drivetrain extends SubsystemBase {
      */
     public void shiftGearbox() {
         gearboxState = !gearboxState;
-        shiftGearboxSolenoid.set(gearboxState ? Value.kReverse : Value.kForward);
+        shiftGearboxSolenoid.set(gearboxState ? Value.kForward : Value.kReverse);
     }
 
     public Boolean getGearboxState() {
@@ -181,6 +217,69 @@ public class Drivetrain extends SubsystemBase {
      */
     public double getCurrentAngle() {
         return Math.IEEEremainder(ahrs.getAngle(), 360);
+    }
+
+    /**
+     * Controls the left and right sides of the drive directly with voltages.
+     *
+     * @param leftVolts  the commanded left output
+     * @param rightVolts the commanded right output
+     */
+    public void tankDriveVolts(double leftVolts, double rightVolts) {
+        lFalconMaster.setVoltage(-leftVolts);
+        lFalconSlave.setVoltage(-leftVolts);
+        rFalconMaster.setVoltage(rightVolts);
+        rFalconMaster.setVoltage(rightVolts);
+
+        differentialDrive.feed();
+    }
+
+    /**
+     * Returns the heading of the robot.
+     *
+     * @return the robot's heading in degrees, from -180 to 180
+     */
+    public double getHeading() {
+        return ahrs.getRotation2d().getDegrees();
+    }
+
+    public void resetPos() {
+
+        lFalconMaster.setSelectedSensorPosition(0);
+        lFalconSlave.setSelectedSensorPosition(0);
+        rFalconMaster.setSelectedSensorPosition(0);
+        rFalconSlave.setSelectedSensorPosition(0);
+
+    }
+
+    /**
+    * Returns the currently-estimated pose of the robot.
+    *
+    * @return The pose.
+    */
+    public Pose2d getPose() {
+        return odometry.getPoseMeters();
+    }
+
+    /**
+     * Resets the odometry to the specified pose.
+     *
+     * @param pose The pose to which to set the odometry.
+     */
+    public void resetOdometry(Pose2d pose) {
+        resetPos();
+        odometry.resetPosition(pose, ahrs.getRotation2d());
+    }
+
+    /**
+     * Returns the current wheel speeds of the robot.
+     *
+     * @return The current wheel speeds.
+     */
+    public DifferentialDriveWheelSpeeds getWheelSpeeds() {
+        return new DifferentialDriveWheelSpeeds(
+            lFalconMaster.getSelectedSensorVelocity() / 2048 / 4.4 * 0.479 * 10, 
+            rFalconMaster.getSelectedSensorVelocity() / 2048 / 4.4 * 0.479 * 10);
     }
 
 }

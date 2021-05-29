@@ -33,13 +33,14 @@ public class ShootBall extends CommandBase {
     public void execute() {
         drum.rotate(Constants.Drum.loadOutput);
         shooter.shoot();
+        shooter.elevateToTargetElevation(0.43);
     }
 
     // Called once the command ends or is interrupted.
     @Override
     public void end(boolean interrupted) {
         drum.stop();
-        shooter.stop();
+        // shooter.stop();
     }
 
     // Returns true when the command should end.

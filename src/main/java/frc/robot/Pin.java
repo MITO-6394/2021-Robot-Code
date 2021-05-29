@@ -134,10 +134,9 @@ public final class Pin {
 
         public static final class Button {
 
-            public static final int autoAim = XboxController.Button.kX.value;
             public static final int shiftGearbox = XboxController.Button.kB.value;
             public static final int deployIntake = XboxController.Button.kY.value;
-            public static final int holdIntake = XboxController.Button.kX.value;
+            public static final int aim = XboxController.Button.kX.value;
             public static final int intakeBall = XboxController.Button.kStickLeft.value;
             public static final int shootBall = XboxController.Button.kStickRight.value;
             public static final int releaseClimber = XboxController.Button.kA.value;

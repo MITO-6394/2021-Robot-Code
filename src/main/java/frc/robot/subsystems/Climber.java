@@ -30,9 +30,11 @@ public class Climber extends SubsystemBase {
     private boolean solenoidState = false;
 
     public Climber() {
-        holder.set(true);
+        holder.set(false);
         // Utility.configTalonSRXPID(lTelescopeTalon, 0.1097, 0.22, 0.0, 0, 0, 0);
         // Utility.configTalonSRXPID(rTelescopeTalon, 0.1097, 0.22, 0.0, 0, 0, 0);
+        rTelescopeTalon.follow(lTelescopeTalon);
+
         Utility.configTalonSRXPID(lTelescopeTalon, 0.0, 0.4, 0.0002, 40, 150, 0.5);
         Utility.configTalonSRXPID(rTelescopeTalon, 0.0, 0.4, 0.0002, 40, 150, 0.5);
 
@@ -52,6 +54,7 @@ public class Climber extends SubsystemBase {
      * Release the climber.
      */
     public void release() {
+        System.out.println("release");
         if (!insurance) {
             solenoidState = !solenoidState;
             holder.set(solenoidState);
@@ -66,7 +69,7 @@ public class Climber extends SubsystemBase {
         // rTelescopeTalon.set(ControlMode.PercentOutput, Constants.Climber.stretchOutput);
         // lTelescopeTalon.set(TalonSRXControlMode.Position, -Constants.Climber.stretchTargetPos * Constants.talonPositionConstant);
         lTelescopeTalon.set(TalonSRXControlMode.Position, 30*-4096);
-        rTelescopeTalon.set(TalonSRXControlMode.Position, 30*4096);
+        // rTelescopeTalon.set(TalonSRXControlMode.Position, 30*4096);
         // rTelescopeTalon.set(TalonSRXControlMode.Position, Constants.Climber.stretchTargetPos * Constants.talonPositionConstant);
     }
 
@@ -75,13 +78,13 @@ public class Climber extends SubsystemBase {
         // rTelescopeTalon.set(ControlMode.PercentOutput, -Constants.Climber.telescopeOutput);
         // lTelescopeTalon.set(TalonSRXControlMode.Position, Constants.Climber.telescopeTargetPos * Constants.talonPositionConstant);
         lTelescopeTalon.set(TalonSRXControlMode.Position, 0);
-        rTelescopeTalon.set(TalonSRXControlMode.Position, 0);
+        // rTelescopeTalon.set(TalonSRXControlMode.Position, 0);
         // rTelescopeTalon.set(TalonSRXControlMode.Position, -Constants.Climber.telescopeTargetPos * Constants.talonPositionConstant);
     }
 
     public void stop() {
         lTelescopeTalon.set(ControlMode.PercentOutput, 0);
-        rTelescopeTalon.set(ControlMode.PercentOutput, 0);
+        // rTelescopeTalon.set(ControlMode.PercentOutput, 0);
     }
 
 }
