@@ -10,7 +10,6 @@ package frc.robot.commands;
 import frc.robot.subsystems.Drivetrain;
 import frc.robot.subsystems.Limelight;
 import frc.robot.subsystems.Shooter;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 
 /**
@@ -22,9 +21,9 @@ public class LeaveInitialLine extends CommandBase {
     private final Drivetrain drivetrain;
     private final Shooter shooter;
 
-    double targetDis = 3.2;
+    double targetDis = 6;
     double distanceErr;
-    double distanceErrTolerance = 0.1;
+    double distanceErrTolerance = 0.3;
 
     public LeaveInitialLine(Limelight limelight, Drivetrain drivetrain, Shooter shooter) {
         this.limelight = limelight;
@@ -41,10 +40,9 @@ public class LeaveInitialLine extends CommandBase {
     // Called every time the scheduler runs while the command is scheduled.
     @Override
     public void execute() {
-        double kp = -0.2;
-        distanceErr = targetDis - limelight.getEstimatedDistance(shooter.getElevation());
-        SmartDashboard.putNumber("distance error", distanceErr);
-        double distanceAdjustment = kp * distanceErr;
+        double Kp = 0.21;
+        distanceErr = targetDis - limelight.getEstimatedDistance(26.2);
+        double distanceAdjustment = Kp * distanceErr;
 
         drivetrain.velocityDrive(distanceAdjustment, 0);
     }
@@ -52,6 +50,7 @@ public class LeaveInitialLine extends CommandBase {
     // Called once the command ends or is interrupted.
     @Override
     public void end(boolean interrupted) {
+        drivetrain.velocityDrive(0, 0);
     }
 
     // Returns true when the command should end.
@@ -62,4 +61,5 @@ public class LeaveInitialLine extends CommandBase {
         }
         return false;
     }
+
 }

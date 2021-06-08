@@ -1,0 +1,26 @@
+Chassis gear ratio:
+    12.85:1
+    4.4:1
+
+Ports:
+    Motor:
+    0: f0lb falconLeftBase
+    1: f1lb falconLeftBase
+    2: f2rb falconRightBase
+    3: f3rb falconRightBase
+    4: f4t falconLoadBall
+    5: tp talonRotateShooter
+    6: tg talonDrum
+    7: fi falconIntake
+    8: pcm
+    11: t3p elevateShooter 
+    12: fs6 flywheel
+    13: fs5 flywheel
+    14: t1gr talonClimb
+    15: t2gl talonClimb
+
+PCM:
+    0: q3 climberRelease
+    1: q2 drivetrain
+    2: q1 drivetrain
+    3: intake

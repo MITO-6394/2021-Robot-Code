@@ -10,12 +10,10 @@ package frc.robot.subsystems;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.Constants;
 
 public class Limelight extends SubsystemBase {
 
     private NetworkTable table;
-    // private double distance;
 
     public Limelight() {
         table = NetworkTableInstance.getDefault().getTable("limelight");
@@ -43,20 +41,12 @@ public class Limelight extends SubsystemBase {
     }
 
     public double getEstimatedDistance(double elevation) {
+        // The height of the center of the Reflective Material on the POWER PORT (the
+        // limelight's crosshair), in meters
         double crosshairHeight = 2.49 - 0.76 / 4;
-        double limelightHeight = 0;
-        return (crosshairHeight-limelightHeight) / Math.tan(elevation+getTy());
+        // The height of limelight camera on our robot, in meters
+        double limelightHeight = 0.57;
+        return (crosshairHeight - limelightHeight) / Math.tan(Math.toRadians(elevation + getTy()));
     }
-
-    // public double getEstimateDistance() {
-    // // calibrate the ratio between ta and the actual distance
-    // distance = getTa() * Constants.taToDistanceRatio;
-    // return distance;
-    // }
-
-    // public double getOptimumRPM(double distance) {
-    // // use regression to model the RPM
-    // return this.getEstimateDistance() * Constants.regressionCoeff;
-    // }
 
 }

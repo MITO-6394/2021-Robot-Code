@@ -12,68 +12,65 @@ import com.ctre.phoenix.motorcontrol.TalonFXFeedbackDevice;
 import com.ctre.phoenix.motorcontrol.can.TalonFX;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 
-/**
- * Add your docs here.
- */
 public class Utility {
 
     // TalonFX init
     public static void TalonFXInit(TalonFX _talon) {
-        _talon.configSelectedFeedbackSensor(TalonFXFeedbackDevice.IntegratedSensor, Constants.kPIDLoopIdx,
-                Constants.kTimeoutMs);
+        _talon.configSelectedFeedbackSensor(TalonFXFeedbackDevice.IntegratedSensor, Constants.Utility.PIDLoopIdx,
+                Constants.Utility.timeoutMs);
         _talon.setSensorPhase(true);
 
-        _talon.configNominalOutputForward(0, Constants.kTimeoutMs);
-        _talon.configNominalOutputReverse(0, Constants.kTimeoutMs);
-        _talon.configPeakOutputForward(1.0, Constants.kTimeoutMs);
-        _talon.configPeakOutputReverse(-1.0, Constants.kTimeoutMs);
+        _talon.configNominalOutputForward(0, Constants.Utility.timeoutMs);
+        _talon.configNominalOutputReverse(0, Constants.Utility.timeoutMs);
+        _talon.configPeakOutputForward(1.0, Constants.Utility.timeoutMs);
+        _talon.configPeakOutputReverse(-1.0, Constants.Utility.timeoutMs);
     }
 
     // TalonSRX init
     public static void TalonSRXInit(TalonSRX _talon) {
-        _talon.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Relative, Constants.kPIDLoopIdx,
-                Constants.kTimeoutMs);
+        _talon.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Relative, Constants.Utility.PIDLoopIdx,
+                Constants.Utility.timeoutMs);
         _talon.setSensorPhase(true);
 
-        _talon.configNominalOutputForward(0, Constants.kTimeoutMs);
-        _talon.configNominalOutputReverse(0, Constants.kTimeoutMs);
-        _talon.configPeakOutputForward(1, Constants.kTimeoutMs);
-        _talon.configPeakOutputReverse(-1, Constants.kTimeoutMs);
+        _talon.configNominalOutputForward(0, Constants.Utility.timeoutMs);
+        _talon.configNominalOutputReverse(0, Constants.Utility.timeoutMs);
+        _talon.configPeakOutputForward(1, Constants.Utility.timeoutMs);
+        _talon.configPeakOutputReverse(-1, Constants.Utility.timeoutMs);
     }
 
     // PID setting
     public static void configTalonSRXPID(TalonSRX _talon, double kF, double kP, double kI, double kD, int kIzone,
             double kRamp) {
-        _talon.config_kF(Constants.kPIDLoopIdx, kF, Constants.kTimeoutMs);
-        _talon.config_kP(Constants.kPIDLoopIdx, kP, Constants.kTimeoutMs);
-        _talon.config_kI(Constants.kPIDLoopIdx, kI, Constants.kTimeoutMs);
-        _talon.config_kD(Constants.kPIDLoopIdx, kD, Constants.kTimeoutMs);
-        _talon.config_IntegralZone(Constants.kPIDLoopIdx, kIzone, Constants.kTimeoutMs);
-        _talon.configClosedloopRamp(kRamp, Constants.kTimeoutMs);
+        _talon.config_kF(Constants.Utility.PIDLoopIdx, kF, Constants.Utility.timeoutMs);
+        _talon.config_kP(Constants.Utility.PIDLoopIdx, kP, Constants.Utility.timeoutMs);
+        _talon.config_kI(Constants.Utility.PIDLoopIdx, kI, Constants.Utility.timeoutMs);
+        _talon.config_kD(Constants.Utility.PIDLoopIdx, kD, Constants.Utility.timeoutMs);
+        _talon.config_IntegralZone(Constants.Utility.PIDLoopIdx, kIzone, Constants.Utility.timeoutMs);
+        _talon.configClosedloopRamp(kRamp, Constants.Utility.timeoutMs);
     }
 
     public static void configTalonFXPID(TalonFX _talon, double kF, double kP, double kI, double kD, double kRamp) {
-        _talon.config_kF(Constants.kPIDLoopIdx, kF, Constants.kTimeoutMs);
-        _talon.config_kP(Constants.kPIDLoopIdx, kP, Constants.kTimeoutMs);
-        _talon.config_kI(Constants.kPIDLoopIdx, kI, Constants.kTimeoutMs);
-        _talon.config_kD(Constants.kPIDLoopIdx, kD, Constants.kTimeoutMs);
-        _talon.configClosedloopRamp(kRamp, Constants.kTimeoutMs);
+        _talon.config_kF(Constants.Utility.PIDLoopIdx, kF, Constants.Utility.timeoutMs);
+        _talon.config_kP(Constants.Utility.PIDLoopIdx, kP, Constants.Utility.timeoutMs);
+        _talon.config_kI(Constants.Utility.PIDLoopIdx, kI, Constants.Utility.timeoutMs);
+        _talon.config_kD(Constants.Utility.PIDLoopIdx, kD, Constants.Utility.timeoutMs);
+        _talon.configClosedloopRamp(kRamp, Constants.Utility.timeoutMs);
     }
 
-    // motor safety
+    // Motor safety
     public static void configMotorSafety(TalonSRX _talon) {
         _talon.enableCurrentLimit(true);
-        _talon.configContinuousCurrentLimit(Constants.kCurrentLimit, Constants.kTimeoutMs);
-        _talon.configPeakCurrentLimit((int) (Constants.kCurrentLimit * 1.5), Constants.kTimeoutMs);
-        _talon.configPeakCurrentDuration(Constants.kCurrentLimitDuration, Constants.kTimeoutMs);
+        _talon.configContinuousCurrentLimit(Constants.Utility.currentLimit, Constants.Utility.timeoutMs);
+        _talon.configPeakCurrentLimit((int) (Constants.Utility.currentLimit * 1.5), Constants.Utility.timeoutMs);
+        _talon.configPeakCurrentDuration(Constants.Utility.currentLimitDuration, Constants.Utility.timeoutMs);
     }
 
-    // turn angle
-    public static double targetAngleModify(double turnAngle, double currentAngle) {
-        if (turnAngle > 180.0) {
-            return currentAngle + turnAngle - 360.0;
+    public static double controllerAxisZeroCorrect(double axis) {
+        if (axis <= Constants.Controller.axisZeroCorrectionRange
+                && axis >= -Constants.Controller.axisZeroCorrectionRange) {
+            return 0;
         }
-        return currentAngle + turnAngle;
+        return axis;
     }
 
 }

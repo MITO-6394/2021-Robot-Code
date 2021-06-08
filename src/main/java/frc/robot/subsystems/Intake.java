@@ -9,11 +9,7 @@ package frc.robot.subsystems;
 
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
-
-import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.Solenoid;
-import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.Pin;
@@ -22,18 +18,13 @@ import frc.robot.Utility;
 public class Intake extends SubsystemBase {
 
     private WPI_TalonFX intakeFalcon = new WPI_TalonFX(Pin.Intake.Motor.intakeFalcon);
-    private DoubleSolenoid deploySolenoid = new DoubleSolenoid(Pin.Intake.Solenoid.deployForward, Pin.Intake.Solenoid.deployReverse);
+    private Solenoid deploySolenoid = new Solenoid(Pin.Intake.Solenoid.deploy);
 
-    // Whether the intake system is deployed
-    private boolean deployState = false;
-
+    private boolean deployState = true;
 
     public Intake() {
         Utility.TalonFXInit(intakeFalcon);
-        intakeFalcon.setInverted(false);
-        // deploySolenoid.set(Value.kReverse
-        // );
-        // deploySolenoid.set(Value.kOff);
+        deploySolenoid.set(deployState);
     }
 
     @Override
@@ -47,31 +38,14 @@ public class Intake extends SubsystemBase {
      */
     public void deploy() {
         deployState = !deployState;
-        deploySolenoid.set(deployState ? Value.kForward : Value.kReverse);
-        SmartDashboard.putString("intake state", deploySolenoid.get().toString());
-        // deploySolenoid.set(Value.kForward);
-        // deploySolenoid.toggle();
-        // SmartDashboard.putBoolean("Intake deployed?", deployState);
-    }
-
-    public void hold() {
-        // deploySolenoid.set(Value.kOff);
+        deploySolenoid.set(deployState);
     }
 
     /**
      * Start to intake balls.
      */
     public void launch() {
-        intakeFalcon.set(ControlMode.PercentOutput, -Constants.intakeMotorOutput);
+        intakeFalcon.set(ControlMode.PercentOutput, -Constants.Intake.intakeMotorOutput);
     }
-
-    /**
-     * Stop intaking.
-     */
-    public void stop() {
-        intakeFalcon.set(ControlMode.PercentOutput, 0);
-    }
-
-    
 
 }

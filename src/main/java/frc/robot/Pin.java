@@ -20,7 +20,6 @@ public final class Pin {
             public static final int rFalconMaster = 3;
             public static final int rFalconSlave = 4;
 
-
         }
 
         public static final class Solenoid {
@@ -41,8 +40,7 @@ public final class Pin {
 
         public static final class Solenoid {
 
-            public static final int deployForward = 3;
-            public static final int deployReverse = 4;
+            public static final int deploy = 3;
 
         }
 
@@ -65,7 +63,7 @@ public final class Pin {
         }
 
         public static final class Sensor {
-            
+
             public static final int elevation = 0;
 
         }
@@ -121,7 +119,7 @@ public final class Pin {
     public static final class Controller {
 
         public static final int moveStick = 0;
-        public static final int functionStick = 1;
+        // public static final int functionStick = 1;
 
         public static final class Axis {
 

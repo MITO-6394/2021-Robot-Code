@@ -9,9 +9,9 @@ package frc.robot.subsystems;
 
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
-import com.ctre.phoenix.motorcontrol.can.VictorSPX;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Constants;
 import frc.robot.Pin;
 
 public class Drum extends SubsystemBase {
@@ -24,12 +24,12 @@ public class Drum extends SubsystemBase {
 
     @Override
     public void periodic() {
-        // This method will be called once per scheduler run
-        rotateTalon.set(ControlMode.PercentOutput, 0);
+        rotate(Constants.Drum.regularOutput);
     }
 
     /**
      * Rotate the drum.
+     * 
      * @param out The percentage output of the motor.
      */
     public void rotate(Double out) {

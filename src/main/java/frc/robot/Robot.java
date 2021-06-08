@@ -7,29 +7,9 @@
 
 package frc.robot;
 
-import java.io.IOException;
-import java.nio.file.Path;
-import java.util.List;
-
-import edu.wpi.first.wpilibj.Compressor;
-import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.TimedRobot;
-import edu.wpi.first.wpilibj.XboxController;
-import edu.wpi.first.wpilibj.GenericHID.Hand;
-import edu.wpi.first.wpilibj.controller.SimpleMotorFeedforward;
-import edu.wpi.first.wpilibj.geometry.Pose2d;
-import edu.wpi.first.wpilibj.geometry.Rotation2d;
-import edu.wpi.first.wpilibj.geometry.Translation2d;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import edu.wpi.first.wpilibj.trajectory.Trajectory;
-import edu.wpi.first.wpilibj.trajectory.TrajectoryConfig;
-import edu.wpi.first.wpilibj.trajectory.TrajectoryGenerator;
-import edu.wpi.first.wpilibj.trajectory.TrajectoryUtil;
-import edu.wpi.first.wpilibj.trajectory.constraint.DifferentialDriveVoltageConstraint;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
-import frc.robot.subsystems.Limelight;
 
 /**
  * The VM is configured to automatically run this class, and to call the
@@ -39,18 +19,9 @@ import frc.robot.subsystems.Limelight;
  * project.
  */
 public class Robot extends TimedRobot {
+
     private Command autonomousCommand;
-
     private RobotContainer robotContainer;
-
-    public Compressor compressor = new Compressor();
-
-    private Limelight limelight = new Limelight();
-    private final XboxController controller = new XboxController(Pin.Controller.moveStick);
-
-    String trajectoryJSON = "paths/YourPath.wpilib.json";
-    Trajectory trajectory = new Trajectory();
-
 
     /**
      * This function is run when the robot is first started up and should be used
@@ -62,12 +33,6 @@ public class Robot extends TimedRobot {
         // and put our
         // autonomous chooser on the dashboard.
         robotContainer = new RobotContainer();
-        // try {
-        //     Path trajectoryPath = Filesystem.getDeployDirectory().toPath().resolve(trajectoryJSON);
-        //     trajectory = TrajectoryUtil.fromPathweaverJson(trajectoryPath);
-        //  } catch (IOException ex) {
-        //     DriverStation.reportError("Unable to open trajectory: " + trajectoryJSON, ex.getStackTrace());
-        //  }
     }
 
     /**
@@ -108,8 +73,6 @@ public class Robot extends TimedRobot {
      */
     @Override
     public void autonomousInit() {
-
-
         autonomousCommand = robotContainer.getAutonomousCommand();
 
         // // schedule the autonomous command (example)
@@ -127,6 +90,7 @@ public class Robot extends TimedRobot {
 
     @Override
     public void teleopInit() {
+
         // This makes sure that the autonomous stops running when
         // teleop starts running. If you want the autonomous to
         // continue until interrupted by another command, remove
@@ -142,10 +106,7 @@ public class Robot extends TimedRobot {
      */
     @Override
     public void teleopPeriodic() {
-        Double tx = limelight.getTx();
-        Double ty = limelight.getTy();
-        SmartDashboard.putNumber("tx", tx);
-        SmartDashboard.putNumber("ty", ty);
+
     }
 
     @Override

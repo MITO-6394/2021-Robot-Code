@@ -31,9 +31,10 @@ public class ShootBall extends CommandBase {
     // Called every time the scheduler runs while the command is scheduled.
     @Override
     public void execute() {
-        drum.rotate(Constants.Drum.loadOutput);
-        shooter.shoot();
-        shooter.elevateToTargetElevation(0.43);
+        drum.rotate(Constants.Drum.regularOutput);
+        if (shooter.shoot(Constants.Shooter.targetElevation)) {
+            drum.rotate(Constants.Drum.shootOutput);
+        }
     }
 
     // Called once the command ends or is interrupted.

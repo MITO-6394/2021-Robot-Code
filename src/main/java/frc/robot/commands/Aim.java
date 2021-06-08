@@ -11,18 +11,12 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.Constants;
 import frc.robot.subsystems.Limelight;
-// import frc.robot.subsystems.Shooter;
 import frc.robot.subsystems.Shooter;
 
 public class Aim extends CommandBase {
 
     private Limelight limelight;
     private Shooter shooter;
-
-    double tx;
-    double ty;
-    double headError;
-    double steeringAdjustment;
 
     public Aim(Limelight limelight, Shooter shooter) {
         this.limelight = limelight;
@@ -39,45 +33,34 @@ public class Aim extends CommandBase {
     // Called every time the scheduler runs while the command is scheduled.
     @Override
     public void execute() {
-        steeringAdjustment = 0.0;
+
+        double steeringAdjustment = 0;
         if (limelight.isTargetFound()) {
             SmartDashboard.putBoolean("Target found?", true);
 
-            headError = -limelight.getTx();
-
-            tx = limelight.getTx();
-            ty = limelight.getTy();
-
-            SmartDashboard.putNumber("tx", tx);
-            SmartDashboard.putNumber("ty", ty);
+            double headError = -limelight.getTx();
 
             if (limelight.getTx() > 1.0) {
-                steeringAdjustment = Constants.kpAim * headError - Constants.minAimCommand;
+                steeringAdjustment = Constants.Limelight.aimKp * headError - Constants.Limelight.minAimCommand;
             } else if (limelight.getTx() < 1.0) {
-                steeringAdjustment = Constants.kpAim * headError + Constants.minAimCommand;
+                steeringAdjustment = Constants.Limelight.aimKp * headError + Constants.Limelight.minAimCommand;
             }
-
-            System.out.println("steeringAdjustment:" + steeringAdjustment);
 
             shooter.rotate(steeringAdjustment);
 
-
-            // mShooter.shooterRotation(steeringAdjustment);
-            // drivetrain.velocityDrive(0.0, -steeringAdjustment * Constants.aimRate);
-        }
-        else {
+        } else {
             SmartDashboard.putBoolean("Target found?", false);
         }
     }
 
     @Override
     public void end(boolean interrupted) {
-
+        shooter.rotate(0);
     }
 
     @Override
     public boolean isFinished() {
-        if (Math.abs(tx) < Constants.kTxTolerance) {
+        if (Math.abs(limelight.getTx()) < Constants.Limelight.txTolerance) {
             SmartDashboard.putBoolean("Aimed?", true);
             return true;
         }
